@@ -2,30 +2,95 @@
 <html lang="id">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Form Permohonan Cuti</title><link rel="stylesheet" href="style.css">
+<title>Form Permohonan Cuti</title>
+<style>
+:root{--ink:#1f2430;--muted:#667085;--line:#d8dce3;--accent:#2f6fed;--paper:#fff;--bg:#f4f6f9;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--ink);}
+.app{max-width:1200px;margin:0 auto;padding:24px;}
+.app-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px;flex-wrap:wrap;}
+.eyebrow{font-size:12px;letter-spacing:.08em;color:var(--accent);font-weight:700;}
+.app-header h1{margin:4px 0 4px;font-size:24px;}
+.app-header p{margin:0;color:var(--muted);font-size:13px;}
+.header-actions{display:flex;gap:10px;}
+.btn{border:1px solid var(--line);background:#fff;padding:9px 16px;border-radius:8px;font-size:14px;cursor:pointer;}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+.btn.secondary{color:var(--muted);}
+.workspace{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;}
+.panel{order:1;}
+.paper-wrap{order:2;}
+@media (max-width:900px){.workspace{grid-template-columns:1fr;}}
+.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px;}
+.panel h2{margin:0 0 16px;font-size:16px;}
+.grid{display:flex;flex-direction:column;gap:12px;}
+.grid label{display:flex;flex-direction:row;align-items:center;gap:12px;font-size:12px;color:var(--muted);}
+.field-label{flex:0 0 190px;text-align:left;}
+.grid input,.grid select{flex:0 1 320px;font-size:14px;color:var(--ink);padding:9px 10px;border:1px solid var(--line);border-radius:7px;background:#fff;min-width:0;}
+.grid input[readonly]{background:#f0f2f5;color:#555;}
+.input-with-list{flex:0 1 320px;display:flex;gap:6px;min-width:0;}
+.input-with-list input{flex:1;}
+.input-with-list{display:flex;gap:6px;}
+.input-with-list input{flex:1;}
+.small-btn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:0 12px;cursor:pointer;font-size:13px;}
+.hint{margin-top:14px;font-size:12px;color:var(--muted);font-style:italic;}
+.paper-wrap{display:flex;justify-content:center;}
+.paper{background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:40px 36px;width:100%;max-width:560px;box-shadow:0 2px 8px rgba(0,0,0,.04);font-size:13.5px;line-height:1.7;}
+.form-title{text-align:center;font-weight:700;font-size:16px;text-decoration:underline;margin-bottom:26px;letter-spacing:.03em;}
+.row{display:flex;gap:8px;margin-bottom:4px;}
+.row .label{flex:0 0 260px;font-weight:600;}
+.row .colon{flex:0 0 10px;}
+.row .value{flex:1;}
+.date-place{text-align:right;margin-top:28px;}
+.approval-title{text-align:center;font-weight:600;margin-top:26px;}
+.approval{display:flex;justify-content:space-between;margin-top:14px;text-align:center;}
+.approval-col{flex:1;}
+.signature-space{height:100px;display:flex;align-items:flex-end;justify-content:center;}
+@media print{.no-print{display:none!important;}.paper{box-shadow:none;border:none;}body{background:#fff;}.workspace{display:block;}}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(20,24,34,.45);display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;z-index:50;overflow-y:auto;}
+.modal-overlay[hidden]{display:none;}
+.modal{background:#fff;border-radius:12px;max-width:920px;width:100%;padding:24px;box-shadow:0 12px 32px rgba(0,0,0,.18);}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.modal-header h2{margin:0;font-size:18px;}
+.modal-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.modal-toolbar input{padding:8px 10px;border:1px solid var(--line);border-radius:7px;font-size:13px;min-width:220px;}
+.modal-toolbar-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.file-btn{display:inline-flex;align-items:center;cursor:pointer;}
+.modal-form{border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px;background:#f8f9fb;}
+.modal-form h3{margin:0 0 12px;font-size:14px;}
+.modal-form-actions{display:flex;gap:8px;margin-top:14px;}
+.table-wrap{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:10px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{position:sticky;top:0;background:#f0f2f5;text-align:left;padding:10px;border-bottom:1px solid var(--line);}
+tbody td{padding:8px 10px;border-bottom:1px solid #eef0f3;vertical-align:middle;}
+.ttd-thumb{max-height:34px;max-width:90px;object-fit:contain;}
+.muted{color:var(--muted);font-size:12px;}
+.row-actions{display:flex;gap:6px;white-space:nowrap;}
+.small-btn.danger{color:#c0392b;border-color:#e6b3ab;}
+</style>
 </head>
 <body>
 <div class="app">
 <header class="app-header">
 <div><div class="eyebrow">FORM CUTI</div><h1>Form Permohonan Cuti</h1><p>Isi data, lalu cetak dan simpan sebagai PDF.</p></div>
-<div class="header-actions no-print"><button class="btn secondary" id="btnReset">Reset</button><button class="btn primary" id="btnPrint">Cetak / Simpan PDF</button></div>
+<div class="header-actions no-print"><button class="btn secondary" id="btnOpenDb">Kelola Database</button><button class="btn secondary" id="btnReset">Reset</button><button class="btn primary" id="btnPrint">Cetak / Simpan PDF</button></div>
 </header>
 <main class="workspace">
 <section class="panel no-print">
 <h2>Data Pengajuan</h2>
 <div class="grid">
-<label>NIK<div class="input-with-list"><input id="nik" list="nikList" inputmode="numeric" placeholder="Ketik/pilih NIK"><datalist id="nikList"></datalist><button type="button" class="small-btn" id="btnFind">Cari</button></div></label>
-<label>Nama<input id="nama" readonly></label>
-<label>Bagian<input id="bagian" readonly></label>
-<label>Tgl. Mulai Kerja<input id="tglMasuk" readonly></label>
-<label>Hak Cuti<input id="hakCuti" type="number" min="0" value="6"></label>
-<label>Cuti yang Diambil<input id="cutiDiambil" type="number" min="0" value="0"></label>
-<label>Sisa Cuti<input id="sisaCuti" type="number" readonly></label>
-<label>Cuti Mulai Tanggal<input id="mulaiCuti" type="date"></label>
-<label>Masuk Bekerja Lagi<input id="masukLagi" type="date"></label>
-<label>Alasan Cuti<input id="alasan" placeholder="Contoh: Keperluan keluarga"></label>
-<label>Alamat Cuti / No. Yang Bisa Dihubungi<input id="kontak" placeholder="Alamat atau nomor telepon"></label>
-<label>Pengganti Selama Cuti<input id="pengganti" placeholder="Nama pengganti"></label>
+<label><span class="field-label">NIK</span><div class="input-with-list"><input id="nik" list="nikList" inputmode="numeric" placeholder="Ketik/pilih NIK"><datalist id="nikList"></datalist><button type="button" class="small-btn" id="btnFind">Cari</button></div></label>
+<label><span class="field-label">Nama</span><input id="nama" readonly></label>
+<label><span class="field-label">Bagian</span><input id="bagian" readonly></label>
+<label><span class="field-label">Tgl. Mulai Kerja</span><input id="tglMasuk" readonly></label>
+<label><span class="field-label">Hak Cuti</span><input id="hakCuti" type="number" min="0" value=""></label>
+<label><span class="field-label">Cuti yang Diambil</span><input id="cutiDiambil" type="number" min="0" value="0"></label>
+<label><span class="field-label">Sisa Cuti</span><input id="sisaCuti" type="number" readonly></label>
+<label><span class="field-label">Cuti Mulai Tanggal</span><input id="mulaiCuti" type="date"></label>
+<label><span class="field-label">Masuk Bekerja Lagi</span><input id="masukLagi" type="date"></label>
+<label><span class="field-label">Alasan Cuti</span><input id="alasan" placeholder="Contoh: Keperluan keluarga"></label>
+<label><span class="field-label">Alamat Cuti / No. Yang Bisa Dihubungi</span><input id="kontak" placeholder="Alamat atau nomor telepon"></label>
+<label><span class="field-label">Pengganti Selama Cuti</span><select id="pengganti"><option value="">- Pilih -</option></select></label>
 </div>
 <div class="hint">Database karyawan diambil dari sheet KARYAWAN pada Form Cuti.xlsm.</div>
 </section>
@@ -46,14 +111,83 @@
 </div>
 <div class="date-place" id="pTempatTanggal">Bogor, -</div>
 <div class="approval-title">Menyetujui / tidak menyetujui</div>
-<div class="approval"><div class="approval-col"><div>Atasan YBS</div><div class="signature-space"></div></div><div class="approval-col"><div>Pemohon</div><div class="signature-space"></div><div id="pPemohon">-</div></div></div>
+<div class="approval"><div class="approval-col"><div>Atasan YBS</div><div class="signature-space"></div></div><div class="approval-col"><div>Pemohon</div><div class="signature-space" id="pPemohonTtd"></div><div id="pPemohon" style="position:relative;z-index:1;">-</div></div></div>
 </div></section>
+
+<div class="modal-overlay no-print" id="dbModalOverlay" hidden>
+<div class="modal">
+<div class="modal-header"><h2>Database Karyawan</h2><button class="btn secondary" id="btnCloseDb">Tutup</button></div>
+<div class="modal-toolbar">
+<input id="dbSearch" placeholder="Cari NIK / Nama / Bagian">
+<div class="modal-toolbar-actions">
+<button class="btn primary" id="btnAddEmp">+ Tambah Karyawan</button>
+<button class="btn secondary" id="btnExportDb">Export JSON</button>
+<label class="btn secondary file-btn">Import JSON<input type="file" id="importDbFile" accept="application/json" hidden></label>
+</div>
+</div>
+<div class="modal-form" id="empForm" hidden>
+<h3 id="empFormTitle">Tambah Karyawan</h3>
+<div class="grid">
+<label>NIK<input id="fNik" inputmode="numeric"></label>
+<label>Nama<input id="fNama"></label>
+<label>Bagian<input id="fBagian"></label>
+<label>Tgl Mulai Kerja<input id="fTglMasuk" type="date"></label>
+<label>Tanda Tangan (gambar)<input id="fTtd" type="file" accept="image/*"></label>
+<label>Pratinjau Tanda Tangan<img id="fTtdPreview" style="display:none;max-height:56px;max-width:160px;object-fit:contain;border:1px solid var(--line);border-radius:6px;padding:4px;"></label>
+</div>
+<input type="hidden" id="fOrigNik">
+<div class="modal-form-actions"><button class="btn primary" id="btnSaveEmp">Simpan</button><button class="btn secondary" id="btnCancelEmp">Batal</button><button class="btn secondary" id="btnClearTtd">Hapus Tanda Tangan</button></div>
+</div>
+<div class="table-wrap">
+<table id="empTable">
+<thead><tr><th>NIK</th><th>Nama</th><th>Bagian</th><th>Tgl Mulai Kerja</th><th>Tanda Tangan</th><th>Aksi</th></tr></thead>
+<tbody id="empTableBody"></tbody>
+</table>
+</div>
+<div class="hint">Perubahan hanya tersimpan di memori halaman ini. Gunakan <strong>Export JSON</strong> untuk menyimpan database ke file, dan <strong>Import JSON</strong> untuk memuatnya kembali lain waktu.</div>
+</div>
+</div>
 </main></div>
 <script>
-const EMPLOYEES = [{"nama": "Afrial Putra", "nik": "2012084217", "bagian": "CCTV & Proforma", "tglMasuk": "2013-02-01"}, {"nama": "Ahmad Zaky Ammar Dany", "nik": "2015497250", "bagian": "DC Support", "tglMasuk": "2023-12-01"}, {"nama": "Alfiyyah Widhiaa R", "nik": "2015120688", "bagian": "Retur", "tglMasuk": "2019-02-06"}, {"nama": "Arga Faalih Triadi", "nik": "2015603090", "bagian": "DC Support", "tglMasuk": "2024-02-05"}, {"nama": "Ari Fatah Abdillah", "nik": "2015416802", "bagian": "NPB", "tglMasuk": "2023-01-01"}, {"nama": "Bambang Pramono", "nik": "2011012060", "bagian": "BPB", "tglMasuk": "2011-07-01"}, {"nama": "Dani Setiawan", "nik": "2015416794", "bagian": "BPB", "tglMasuk": "2023-01-01"}, {"nama": "Daniel Stephen Lase", "nik": "2013061250", "bagian": "Supervisor", "tglMasuk": "2014-08-18"}, {"nama": "Deky Nurdiansyah S", "nik": "2013143102", "bagian": "Inventory", "tglMasuk": "2015-11-23"}, {"nama": "Dianastri Dewi Maharani", "nik": "2015263710", "bagian": "Apoteker", "tglMasuk": "2021-06-02"}, {"nama": "Erik Hidayat", "nik": "2012095347", "bagian": "CCTV & Proforma", "tglMasuk": "2013-03-11"}, {"nama": "Heni Siti Samsiyah", "nik": "2013048082", "bagian": "Adm DCM", "tglMasuk": "2014-05-19"}, {"nama": "Hussy Bamban Suryanegara", "nik": "2012084171", "bagian": "Inventory", "tglMasuk": "2013-02-01"}, {"nama": "Ihsan Arif", "nik": "2013006550", "bagian": "CCTV & Proforma", "tglMasuk": "2013-07-08"}, {"nama": "Mamuah", "nik": "1999000017", "bagian": "BPB", "tglMasuk": "1999-01-06"}, {"nama": "Muhamad Padli Tanjung", "nik": "2013092069", "bagian": "DC Support", "tglMasuk": "2015-01-26"}, {"nama": "Muhamad Subhi", "nik": "2013140099", "bagian": "CCTV & Proforma", "tglMasuk": "2015-11-02"}, {"nama": "Muhammad Farhan", "nik": "2015704193", "bagian": "Supervisor", "tglMasuk": "2026-02-02"}, {"nama": "Muhammad Febrian Arrasyid", "nik": "2015433368", "bagian": "DC Support", "tglMasuk": "2023-03-01"}, {"nama": "Muhammad Hikmal N S H", "nik": "2015416772", "bagian": "Inventory", "tglMasuk": "2023-01-01"}, {"nama": "Nanang Sobarkah", "nik": "2013162035", "bagian": "BPB", "tglMasuk": "2016-02-15"}, {"nama": "Nurji", "nik": "2011012070", "bagian": "CCTV & Proforma", "tglMasuk": "2011-07-01"}, {"nama": "Rekki Prihakasa Trisyana", "nik": "2012035914", "bagian": "NPB", "tglMasuk": "2012-06-25"}, {"nama": "Ridwan Purwanto", "nik": "2013074871", "bagian": "DC Support", "tglMasuk": "2014-10-20"}, {"nama": "Riki Maulana", "nik": "2010020843", "bagian": "NPB", "tglMasuk": "2010-09-01"}, {"nama": "Rinaldy Ramdhoni Sumawan", "nik": "2013094646", "bagian": "Supervisor", "tglMasuk": "2015-02-09"}, {"nama": "Riyan Heryanto", "nik": "2013048831", "bagian": "Inventory", "tglMasuk": "2014-05-26"}, {"nama": "Rizki Febrian", "nik": "2015441830", "bagian": "Inventory", "tglMasuk": "2023-04-01"}, {"nama": "Taufik Hidayat", "nik": "2015343209", "bagian": "DC Support", "tglMasuk": "2022-06-01"}, {"nama": "Titin Yuliawati", "nik": "2001006401", "bagian": "Adm Voucher", "tglMasuk": "2001-08-20"}, {"nama": "Toni Riyanto", "nik": "2011016361", "bagian": "BPB", "tglMasuk": "2011-09-12"}, {"nama": "Vino Samuel Salakay", "nik": "2013163302", "bagian": "NPB", "tglMasuk": "2016-02-22"}, {"nama": "Wiena Anggaery", "nik": "2004006767", "bagian": "Supervisor", "tglMasuk": "2004-10-11"}];
-const DEFAULT_HAK_CUTI = 6;
+let EMPLOYEES = [
+{"nama":"Afrial Putra","nik":"2012084217","bagian":"CCTV & Proforma","tglMasuk":"2013-02-01","tandaTangan":null},
+{"nama":"Ahmad Zaky Ammar Dany","nik":"2015497250","bagian":"DC Support","tglMasuk":"2023-12-01","tandaTangan":null},
+{"nama":"Alfiyyah Widhiaa R","nik":"2015120688","bagian":"Retur","tglMasuk":"2019-02-06","tandaTangan":null},
+{"nama":"Arga Faalih Triadi","nik":"2015603090","bagian":"DC Support","tglMasuk":"2024-02-05","tandaTangan":null},
+{"nama":"Ari Fatah Abdillah","nik":"2015416802","bagian":"NPB","tglMasuk":"2023-01-01","tandaTangan":null},
+{"nama":"Bambang Pramono","nik":"2011012060","bagian":"BPB","tglMasuk":"2011-07-01","tandaTangan":null},
+{"nama":"Dani Setiawan","nik":"2015416794","bagian":"BPB","tglMasuk":"2023-01-01","tandaTangan":null},
+{"nama":"Daniel Stephen Lase","nik":"2013061250","bagian":"Supervisor","tglMasuk":"2014-08-18","tandaTangan":null},
+{"nama":"Deky Nurdiansyah S","nik":"2013143102","bagian":"Inventory","tglMasuk":"2015-11-23","tandaTangan":null},
+{"nama":"Dianastri Dewi Maharani","nik":"2015263710","bagian":"Apoteker","tglMasuk":"2021-06-02","tandaTangan":null},
+{"nama":"Erik Hidayat","nik":"2012095347","bagian":"CCTV & Proforma","tglMasuk":"2013-03-11","tandaTangan":null},
+{"nama":"Heni Siti Samsiyah","nik":"2013048082","bagian":"Adm DCM","tglMasuk":"2014-05-19","tandaTangan":null},
+{"nama":"Hussy Bamban Suryanegara","nik":"2012084171","bagian":"Inventory","tglMasuk":"2013-02-01","tandaTangan":null},
+{"nama":"Ihsan Arif","nik":"2013006550","bagian":"CCTV & Proforma","tglMasuk":"2013-07-08","tandaTangan":null},
+{"nama":"Mamuah","nik":"1999000017","bagian":"BPB","tglMasuk":"1999-01-06","tandaTangan":null},
+{"nama":"Muhamad Padli Tanjung","nik":"2013092069","bagian":"DC Support","tglMasuk":"2015-01-26","tandaTangan":null},
+{"nama":"Muhamad Subhi","nik":"2013140099","bagian":"CCTV & Proforma","tglMasuk":"2015-11-02","tandaTangan":null},
+{"nama":"Muhammad Farhan","nik":"2015704193","bagian":"Supervisor","tglMasuk":"2026-02-02","tandaTangan":null},
+{"nama":"Muhammad Febrian Arrasyid","nik":"2015433368","bagian":"DC Support","tglMasuk":"2023-03-01","tandaTangan":null},
+{"nama":"Muhammad Hikmal N S H","nik":"2015416772","bagian":"Inventory","tglMasuk":"2023-01-01","tandaTangan":null},
+{"nama":"Nanang Sobarkah","nik":"2013162035","bagian":"BPB","tglMasuk":"2016-02-15","tandaTangan":null},
+{"nama":"Nurji","nik":"2011012070","bagian":"CCTV & Proforma","tglMasuk":"2011-07-01","tandaTangan":null},
+{"nama":"Rekki Prihakasa Trisyana","nik":"2012035914","bagian":"NPB","tglMasuk":"2012-06-25","tandaTangan":null},
+{"nama":"Ridwan Purwanto","nik":"2013074871","bagian":"DC Support","tglMasuk":"2014-10-20","tandaTangan":null},
+{"nama":"Riki Maulana","nik":"2010020843","bagian":"NPB","tglMasuk":"2010-09-01","tandaTangan":null},
+{"nama":"Rinaldy Ramdhoni Sumawan","nik":"2013094646","bagian":"Supervisor","tglMasuk":"2015-02-09","tandaTangan":null},
+{"nama":"Riyan Heryanto","nik":"2013048831","bagian":"Inventory","tglMasuk":"2014-05-26","tandaTangan":null},
+{"nama":"Rizki Febrian","nik":"2015441830","bagian":"Inventory","tglMasuk":"2023-04-01","tandaTangan":null},
+{"nama":"Taufik Hidayat","nik":"2015343209","bagian":"DC Support","tglMasuk":"2022-06-01","tandaTangan":null},
+{"nama":"Titin Yuliawati","nik":"2001006401","bagian":"Adm Voucher","tglMasuk":"2001-08-20","tandaTangan":null},
+{"nama":"Toni Riyanto","nik":"2011016361","bagian":"BPB","tglMasuk":"2011-09-12","tandaTangan":null},
+{"nama":"Vino Samuel Salakay","nik":"2013163302","bagian":"NPB","tglMasuk":"2016-02-22","tandaTangan":null},
+{"nama":"Wiena Anggaery","nik":"2004006767","bagian":"Supervisor","tglMasuk":"2004-10-11","tandaTangan":null},
+{"nama":"Zicho Oky Mirnanda","nik":"2013163334","bagian":"Inventory","tglMasuk":"2016-02-22","tandaTangan":null}
+];
+const DEFAULT_HAK_CUTI = "";
 const $ = id => document.getElementById(id);
-EMPLOYEES.forEach(e => { const o=document.createElement("option"); o.value=e.nik; o.label=e.nama+" — "+e.bagian; $("nikList").appendChild(o); });
+EMPLOYEES.forEach(e => { if(e.tandaTangan===undefined) e.tandaTangan=null; const o=document.createElement("option"); o.value=e.nik; o.label=e.nama+" — "+e.bagian; $("nikList").appendChild(o); });
 function formatDate(iso) { if(!iso) return "-"; return new Intl.DateTimeFormat("id-ID",{day:"2-digit",month:"long",year:"numeric"}).format(new Date(iso+"T00:00:00")); }
 function proper(s) { return (s||"").toLowerCase().replace(/(^|[\s\/.-])([a-zà-ÿ])/g,(_,a,b)=>a+b.toUpperCase()); }
 function todayPlace() { return "Bogor, "+new Intl.DateTimeFormat("id-ID",{day:"2-digit",month:"long",year:"numeric"}).format(new Date()); }
@@ -69,11 +203,127 @@ function sync() {
  $("pMulai").textContent=formatDate($("mulaiCuti").value); $("pMasukLagi").textContent=formatDate($("masukLagi").value);
  $("pAlasan").textContent=proper($("alasan").value)||"-"; $("pKontak").textContent=$("kontak").value||"-"; $("pPengganti").textContent=proper($("pengganti").value)||"-"; $("pPemohon").textContent=proper($("nama").value)||"-";
  const y=new Date().getFullYear(); $("pTahun1").textContent=y; $("pTahun2").textContent=y+1; $("pTempatTanggal").textContent=todayPlace();
+ const emp=EMPLOYEES.find(x=>x.nik===$("nik").value.trim());
+ const ttdWrap=$("pPemohonTtd");
+ ttdWrap.innerHTML=(emp&&emp.tandaTangan)?`<img src="${emp.tandaTangan}" style="max-height:130px;max-width:280px;object-fit:contain;position:relative;z-index:2;margin-bottom:-22px;">`:"";
 }
+
+/* ===== Database Karyawan (CRUD) ===== */
+let currentEditNik=null, pendingTtd=null;
+function refreshNikList(){ $("nikList").innerHTML=""; EMPLOYEES.forEach(e=>{const o=document.createElement("option");o.value=e.nik;o.label=e.nama+" — "+e.bagian;$("nikList").appendChild(o);}); }
+function refreshPenggantiOptions(){
+ const sel=$("pengganti"); const cur=sel.value;
+ sel.innerHTML='<option value="">- Pilih -</option>';
+ EMPLOYEES.slice().sort((a,b)=>a.nama.localeCompare(b.nama)).forEach(e=>{const o=document.createElement("option");o.value=e.nama;o.textContent=e.nama;sel.appendChild(o);});
+ if(EMPLOYEES.some(e=>e.nama===cur)) sel.value=cur;
+}
+function renderDbTable(filter){
+ const f=(filter||$("dbSearch").value||"").trim().toLowerCase();
+ const tbody=$("empTableBody"); tbody.innerHTML="";
+ EMPLOYEES.filter(e=>!f||e.nik.includes(f)||e.nama.toLowerCase().includes(f)||e.bagian.toLowerCase().includes(f)).forEach(e=>{
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td>${e.nik}</td><td>${e.nama}</td><td>${e.bagian}</td><td>${formatDate(e.tglMasuk)}</td><td>${e.tandaTangan?`<img class="ttd-thumb" src="${e.tandaTangan}">`:'<span class="muted">-</span>'}</td><td class="row-actions"><button class="small-btn" data-edit="${e.nik}">Edit</button><button class="small-btn danger" data-del="${e.nik}">Hapus</button></td>`;
+  tbody.appendChild(tr);
+ });
+}
+function refreshAfterDbChange(){ refreshNikList(); refreshPenggantiOptions(); renderDbTable(); if($("nik").value.trim()) sync(); }
+function openEmpForm(nik){
+ currentEditNik=nik||null; pendingTtd=null;
+ $("empForm").hidden=false;
+ if(nik){
+  const e=EMPLOYEES.find(x=>x.nik===nik);
+  $("empFormTitle").textContent="Edit Karyawan";
+  $("fNik").value=e.nik; $("fNama").value=e.nama; $("fBagian").value=e.bagian; $("fTglMasuk").value=e.tglMasuk; $("fOrigNik").value=e.nik;
+  if(e.tandaTangan){ $("fTtdPreview").src=e.tandaTangan; $("fTtdPreview").style.display="inline-block"; pendingTtd=e.tandaTangan; } else { $("fTtdPreview").style.display="none"; $("fTtdPreview").src=""; }
+ } else {
+  $("empFormTitle").textContent="Tambah Karyawan";
+  ["fNik","fNama","fBagian","fTglMasuk","fOrigNik"].forEach(id=>$(id).value="");
+  $("fTtdPreview").style.display="none"; $("fTtdPreview").src="";
+ }
+ $("fTtd").value="";
+}
+function closeEmpForm(){ $("empForm").hidden=true; currentEditNik=null; pendingTtd=null; }
+function saveEmp(){
+ const nik=$("fNik").value.trim(), nama=$("fNama").value.trim(), bagian=$("fBagian").value.trim(), tglMasuk=$("fTglMasuk").value;
+ if(!nik||!nama||!bagian||!tglMasuk){ alert("NIK, Nama, Bagian, dan Tgl Mulai Kerja wajib diisi."); return; }
+ const origNik=$("fOrigNik").value;
+ const dupe=EMPLOYEES.find(x=>x.nik===nik && x.nik!==origNik);
+ if(dupe){ alert("NIK sudah terdaftar untuk karyawan lain."); return; }
+ const record={nama,nik,bagian,tglMasuk,tandaTangan:pendingTtd||null};
+ if(origNik){ const idx=EMPLOYEES.findIndex(x=>x.nik===origNik); EMPLOYEES[idx]=record; }
+ else { EMPLOYEES.push(record); }
+ closeEmpForm(); refreshAfterDbChange();
+}
+function deleteEmp(nik){
+ const e=EMPLOYEES.find(x=>x.nik===nik); if(!e) return;
+ if(!confirm(`Hapus data ${e.nama} (NIK ${nik})?`)) return;
+ EMPLOYEES=EMPLOYEES.filter(x=>x.nik!==nik);
+ refreshAfterDbChange();
+}
+function exportDb(){
+ const blob=new Blob([JSON.stringify(EMPLOYEES,null,2)],{type:"application/json"});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement("a"); a.href=url; a.download="database-karyawan.json"; a.click();
+ URL.revokeObjectURL(url);
+}
+function importDb(file){
+ const reader=new FileReader();
+ reader.onload=()=>{
+  try{
+   const data=JSON.parse(reader.result);
+   if(!Array.isArray(data)) throw new Error("Format tidak sesuai");
+   EMPLOYEES=data; refreshAfterDbChange();
+   alert("Database berhasil dimuat ("+data.length+" karyawan).");
+  }catch(err){ alert("Gagal memuat file JSON: "+err.message); }
+ };
+ reader.readAsText(file);
+}
+$("btnOpenDb").onclick=()=>{ $("dbModalOverlay").hidden=false; renderDbTable(); };
+$("btnCloseDb").onclick=()=>{ $("dbModalOverlay").hidden=true; closeEmpForm(); };
+$("btnAddEmp").onclick=()=>openEmpForm(null);
+$("btnCancelEmp").onclick=closeEmpForm;
+$("btnSaveEmp").onclick=saveEmp;
+$("btnClearTtd").onclick=()=>{ pendingTtd=null; $("fTtdPreview").style.display="none"; $("fTtdPreview").src=""; };
+$("btnExportDb").onclick=exportDb;
+$("importDbFile").onchange=(e)=>{ if(e.target.files[0]) importDb(e.target.files[0]); e.target.value=""; };
+$("dbSearch").oninput=()=>renderDbTable();
+$("fTtd").onchange=(e)=>{
+ const file=e.target.files[0]; if(!file) return;
+ const reader=new FileReader();
+ reader.onload=()=>{
+  const img=new Image();
+  img.onload=()=>{
+   const canvas=document.createElement("canvas");
+   canvas.width=img.naturalWidth; canvas.height=img.naturalHeight;
+   const ctx=canvas.getContext("2d");
+   ctx.drawImage(img,0,0);
+   try{
+    const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+    const d=imgData.data;
+    const threshold=235;
+    for(let i=0;i<d.length;i+=4){
+     if(d[i]>=threshold && d[i+1]>=threshold && d[i+2]>=threshold){ d[i+3]=0; }
+    }
+    ctx.putImageData(imgData,0,0);
+   }catch(err){}
+   const pngDataUrl=canvas.toDataURL("image/png");
+   pendingTtd=pngDataUrl; $("fTtdPreview").src=pngDataUrl; $("fTtdPreview").style.display="inline-block";
+  };
+  img.onerror=()=>alert("Gagal membaca gambar tanda tangan.");
+  img.src=reader.result;
+ };
+ reader.readAsDataURL(file);
+};
+$("empTableBody").addEventListener("click",(e)=>{
+ const editNik=e.target.getAttribute("data-edit"); const delNik=e.target.getAttribute("data-del");
+ if(editNik) openEmpForm(editNik);
+ if(delNik) deleteEmp(delNik);
+});
 $("btnFind").onclick=findEmployee; $("nik").onchange=findEmployee; $("nik").oninput=()=>{if(EMPLOYEES.some(x=>x.nik===$("nik").value.trim()))findEmployee();};
 ["hakCuti","cutiDiambil","mulaiCuti","masukLagi","alasan","kontak","pengganti"].forEach(id=>{$(id).oninput=sync;$(id).onchange=sync;});
-$("btnReset").onclick=()=>{document.querySelectorAll(".panel input").forEach(el=>{if(el.id==="hakCuti")el.value=DEFAULT_HAK_CUTI;else if(el.id==="cutiDiambil")el.value=0;else el.value="";});sync();};
+$("btnReset").onclick=()=>{document.querySelectorAll(".panel input").forEach(el=>{if(el.id==="hakCuti")el.value=DEFAULT_HAK_CUTI;else if(el.id==="cutiDiambil")el.value=0;else el.value="";});$("pengganti").value="";sync();};
 $("btnPrint").onclick=()=>{sync();window.print();};
+refreshPenggantiOptions();
 sync();
 </script>
 </body></html>
