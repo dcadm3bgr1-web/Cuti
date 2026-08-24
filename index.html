@@ -84,6 +84,87 @@ tbody td{padding:8px 10px;border-bottom:1px solid #eef0f3;vertical-align:middle;
 .muted{color:var(--muted);font-size:12px;}
 .row-actions{display:flex;gap:6px;white-space:nowrap;}
 .small-btn.danger{color:#c0392b;border-color:#e6b3ab;}
+
+/* =========================
+   PENGATURAN KHUSUS CETAK
+   ========================= */
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+@media print {
+  html, body {
+    width: 210mm;
+    height: 297mm;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: visible !important;
+  }
+
+  /* Sembunyikan seluruh UI aplikasi */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Hanya form yang dicetak */
+  .paper,
+  .paper * {
+    visibility: visible !important;
+  }
+
+  .paper-wrap {
+    display: block !important;
+    position: static !important;
+    width: 210mm !important;
+    min-height: 297mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .paper {
+    display: block !important;
+    position: relative !important;
+    width: 190mm !important;
+    min-height: 277mm !important;
+    margin: 10mm auto !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+
+    /* Hilangkan efek layar */
+    box-shadow: none !important;
+    border: none !important;
+
+    /* Pertahankan background/form asli */
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+
+    /* Hindari form terpotong */
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Pastikan elemen di dalam form tidak membuat halaman kedua */
+  .paper > * {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Hilangkan elemen yang memang hanya untuk layar */
+  .no-print,
+  button,
+  .print-only-hide {
+    display: none !important;
+  }
+
+  /* Form jangan diubah menjadi landscape */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+}
+
 </style>
 </head>
 <body>
