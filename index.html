@@ -100,7 +100,7 @@ tbody td{padding:8px 10px;border-bottom:1px solid #eef0f3;vertical-align:middle;
 */
 @page {
   size: A4 portrait;
-  margin: 0;
+  margin: 5mm;
 }
 
 @media print {
@@ -172,6 +172,59 @@ tbody td{padding:8px 10px;border-bottom:1px solid #eef0f3;vertical-align:middle;
 }
 
 </style>
+<style>
+/* Font diperkecil menjadi 75% dari ukuran preview sebelumnya. */
+.eyebrow{font-size:18px !important;}
+.app-header h1{font-size:36px !important;}
+.app-header p{font-size:19.5px !important;}
+.btn{font-size:21px !important;}
+.panel h2{font-size:24px !important;}
+.grid label,.field-label{font-size:16.5px !important;}
+.grid input,.grid select{font-size:19.5px !important;}
+.small-btn{font-size:18px !important;}
+.hint{font-size:18px !important;}
+.paper{font-size:15.25px !important;}
+.form-title{font-size:26px !important;margin-bottom:20px !important;}
+.modal-header h2{font-size:27px !important;}
+.modal-toolbar input{font-size:19.5px !important;}
+.modal-form h3{font-size:21px !important;}
+table{font-size:19.5px !important;}
+.muted{font-size:18px !important;}
+/* Sejajarkan kolom titik dua di tengah halaman cetak. */
+.paper .row{display:grid;grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr);gap:8px;}
+.paper .row .label{flex:none;min-width:0;text-align:left;}
+.paper .row .colon{flex:none;width:auto;text-align:center;transform:translateX(6px);}
+.paper .row .value{min-width:0;padding-left:calc(4ch + 6px);}
+.paper .form-body .row{margin-bottom:6px;}
+.paper .form-body .row:last-child{margin-bottom:1.4em;}
+.paper .date-place{width:50%;margin-left:auto;margin-bottom:0;text-align:center;}
+.paper .approval{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;column-gap:24px;row-gap:0;margin-top:0;}
+.paper .approval-head{min-width:0;}
+.paper .approval-head .approval-label{margin-bottom:4px;}
+.paper .approval-col{min-width:0;flex:none;}
+.paper .signature-space{width:50%;margin-left:auto;margin-right:auto;}
+.paper .approval-name{margin-top:4px;margin-bottom:4px;}
+.paper .leave-number-row .value{position:relative;padding-left:0;padding-right:calc(26ch - 6px);text-align:right;}
+.paper .leave-number-row .leave-number{position:absolute;left:calc(4ch + 6px);top:0;}
+.paper .leave-number-row .leave-unit{display:block;white-space:nowrap;}
+.paper{background-size:90% auto !important;}
+.panel{padding:12px !important;max-width:390px !important;}
+.panel h2{font-size:21px !important;}
+.panel .grid{gap:10px;}
+.panel .grid label,.panel .field-label{font-size:14px !important;}
+.panel .grid input,.panel .grid select{font-size:15px !important;padding:6px 8px;}
+.panel .small-btn{font-size:14px !important;}
+.panel .hint{font-size:14px !important;}
+/* Sisakan margin cetak agar border tidak terpotong printer. */
+@media print {
+  html,body{width:200mm !important;height:287mm !important;min-height:0 !important;}
+  .app,.workspace,.paper-wrap{width:200mm !important;margin-left:auto !important;margin-right:auto !important;}
+  .workspace,.paper-wrap{height:141mm !important;}
+  .paper{width:200mm !important;height:141mm !important;min-height:141mm !important;max-height:141mm !important;margin-left:auto !important;margin-right:auto !important;padding:15px 50px !important;}
+  .paper .form-title{margin-bottom:14px !important;}
+  .paper .form-body .row{margin-bottom:4px !important;}
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -204,9 +257,9 @@ tbody td{padding:8px 10px;border-bottom:1px solid #eef0f3;vertical-align:middle;
 <div class="row"><div class="label">NIK</div><div class="colon">:</div><div class="value" id="pNik">-</div></div>
 <div class="row"><div class="label">NAMA</div><div class="colon">:</div><div class="value" id="pNama">-</div></div>
 <div class="row"><div class="label">TGL. MULAI KERJA</div><div class="colon">:</div><div class="value" id="pTglMasuk">-</div></div>
-<div class="row"><div class="label">SISA HAK CUTI TAHUNAN/BESAR/<span id="pTahun1"></span>/<span id="pTahun2"></span></div><div class="colon">:</div><div class="value"><span id="pHak">0</span>&nbsp;&nbsp;&nbsp;&nbsp; Hari.</div></div>
-<div class="row"><div class="label">CUTI YANG DIAMBIL</div><div class="colon">:</div><div class="value"><span id="pDiambil">0</span>&nbsp;&nbsp;&nbsp;&nbsp; Hari.</div></div>
-<div class="row"><div class="label">SISA CUTI</div><div class="colon">:</div><div class="value"><span id="pSisa">0</span>&nbsp;&nbsp;&nbsp;&nbsp; Hari.</div></div>
+<div class="row leave-number-row"><div class="label">SISA HAK CUTI TAHUNAN/BESAR/<span id="pTahun1"></span>/<span id="pTahun2"></span></div><div class="colon">:</div><div class="value"><span class="leave-number" id="pHak">0</span><span class="leave-unit">Hari.</span></div></div>
+<div class="row leave-number-row"><div class="label">CUTI YANG DIAMBIL</div><div class="colon">:</div><div class="value"><span class="leave-number" id="pDiambil">0</span><span class="leave-unit">Hari.</span></div></div>
+<div class="row leave-number-row"><div class="label">SISA CUTI</div><div class="colon">:</div><div class="value"><span class="leave-number" id="pSisa">0</span><span class="leave-unit">Hari.</span></div></div>
 <div class="row"><div class="label">CUTI MULAI TANGGAL</div><div class="colon">:</div><div class="value" id="pMulai">-</div></div>
 <div class="row"><div class="label">MASUK BEKERJA LAGI TANGGAL</div><div class="colon">:</div><div class="value" id="pMasukLagi">-</div></div>
 <div class="row"><div class="label">ALASAN CUTI</div><div class="colon">:</div><div class="value" id="pAlasan">-</div></div>
@@ -214,7 +267,7 @@ tbody td{padding:8px 10px;border-bottom:1px solid #eef0f3;vertical-align:middle;
 <div class="row"><div class="label">PENGGANTI SELAMA CUTI</div><div class="colon">:</div><div class="value" id="pPengganti">-</div></div>
 </div>
 <div class="date-place" id="pTempatTanggal">Bogor, -</div>
-<div class="approval"><div class="approval-col"><div class="approval-label">Atasan YBS</div><div class="signature-space"></div></div><div class="approval-col approval-center"><div class="approval-label approval-center-label">Menyetujui / tidak menyetujui</div></div><div class="approval-col"><div class="approval-label">Pemohon</div><div class="signature-space" id="pPemohonTtd"></div><div class="approval-name" id="pPemohon">-</div></div></div>
+<div class="approval"><div class="approval-head"><div class="approval-label approval-center-label">Menyetujui / tidak menyetujui</div></div><div class="approval-head" aria-hidden="true"></div><div class="approval-col"><div class="approval-label">Atasan YBS</div><div class="approval-name approval-name-placeholder" aria-hidden="true">&nbsp;</div><div class="signature-space"></div></div><div class="approval-col"><div class="approval-label">Pemohon</div><div class="approval-name" id="pPemohon">-</div><div class="signature-space" id="pPemohonTtd"></div></div></div>
 </div></section>
 
 <div class="modal-overlay no-print" id="dbModalOverlay" hidden="">
