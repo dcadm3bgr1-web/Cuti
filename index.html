@@ -227,6 +227,7 @@ table{font-size:19.5px !important;}
 .modal{padding:18px !important;}
 .modal .btn{font-size:13px !important;padding:7px 12px !important;}
 .modal-header h2{font-size:18px !important;}
+.modal-header .btn{font-size:12px !important;padding:5px 10px !important;}
 .modal-toolbar input{font-size:13px !important;padding:7px 10px !important;min-width:200px !important;}
 .modal-form{padding:12px !important;}
 .modal-form h3{font-size:14px !important;}
@@ -445,8 +446,8 @@ body{background:#eef3f9;}
 <input id="dbSearch" placeholder="Cari NIK / Nama / Bagian">
 <div class="modal-toolbar-actions">
 <button class="btn primary" id="btnAddEmp">+ Tambah Karyawan</button>
-<button class="btn secondary" id="btnExportDb">Export JSON</button>
-<label class="btn secondary file-btn">Import JSON<input type="file" id="importDbFile" accept="application/json" hidden=""></label>
+<button class="btn secondary" id="btnExportDb">Export Excel</button>
+<label class="btn secondary file-btn">Import Excel<input type="file" id="importDbFile" accept=".xlsx,.xls" hidden=""></label>
 </div>
 </div>
 <div class="modal-form" id="empForm" hidden="">
@@ -468,10 +469,11 @@ body{background:#eef3f9;}
 <tbody id="empTableBody"></tbody>
 </table>
 </div>
-<div class="hint">Perubahan hanya tersimpan di memori halaman ini. Gunakan <strong>Export JSON</strong> untuk menyimpan database ke file, dan <strong>Import JSON</strong> untuk memuatnya kembali lain waktu.</div>
+<div class="hint">Perubahan hanya tersimpan di memori halaman ini. Gunakan <strong>Export Excel</strong> untuk menyimpan database ke file .xlsx, dan <strong>Import Excel</strong> untuk memuatnya kembali lain waktu.</div>
 </div>
 </div>
 </main></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 let EMPLOYEES = [
 {"nama":"Afrial Putra","nik":"2012084217","bagian":"CCTV & Proforma","tglMasuk":"2013-02-01","tandaTangan":null},
@@ -585,22 +587,43 @@ function deleteEmp(nik){
  refreshAfterDbChange();
 }
 function exportDb(){
- const blob=new Blob([JSON.stringify(EMPLOYEES,null,2)],{type:"application/json"});
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a"); a.href=url; a.download="database-karyawan.json"; a.click();
- URL.revokeObjectURL(url);
+ const rows=EMPLOYEES.map(e=>({NIK:e.nik,Nama:e.nama,Bagian:e.bagian,"Tgl Mulai Kerja":e.tglMasuk||"","Tanda Tangan (base64)":e.tandaTangan||""}));
+ const ws=XLSX.utils.json_to_sheet(rows);
+ ws["!cols"]=[{wch:14},{wch:26},{wch:20},{wch:14},{wch:20}];
+ const wb=XLSX.utils.book_new();
+ XLSX.utils.book_append_sheet(wb,ws,"Karyawan");
+ XLSX.writeFile(wb,"database-karyawan.xlsx");
 }
 function importDb(file){
  const reader=new FileReader();
  reader.onload=()=>{
   try{
-   const data=JSON.parse(reader.result);
-   if(!Array.isArray(data)) throw new Error("Format tidak sesuai");
+   const wb=XLSX.read(reader.result,{type:"array"});
+   const ws=wb.Sheets[wb.SheetNames[0]];
+   const rows=XLSX.utils.sheet_to_json(ws,{defval:""});
+   const data=rows.map(r=>({
+    nik:String(r["NIK"]??"").trim(),
+    nama:String(r["Nama"]??"").trim(),
+    bagian:String(r["Bagian"]??"").trim(),
+    tglMasuk:formatExcelDate(r["Tgl Mulai Kerja"]),
+    tandaTangan:String(r["Tanda Tangan (base64)"]??"").trim()||null
+   })).filter(r=>r.nik);
+   if(!data.length) throw new Error("Tidak ada baris data yang valid");
    EMPLOYEES=data; refreshAfterDbChange();
    alert("Database berhasil dimuat ("+data.length+" karyawan).");
-  }catch(err){ alert("Gagal memuat file JSON: "+err.message); }
+  }catch(err){ alert("Gagal memuat file Excel: "+err.message); }
  };
- reader.readAsText(file);
+ reader.readAsArrayBuffer(file);
+}
+function formatExcelDate(v){
+ if(!v) return "";
+ if(typeof v==="number"){ const d=XLSX.SSF.parse_date_code(v); if(!d) return ""; return `${d.y}-${String(d.m).padStart(2,"0")}-${String(d.d).padStart(2,"0")}`; }
+ const s=String(v).trim();
+ const m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+ if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+ const d=new Date(s);
+ if(!isNaN(d)) return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+ return "";
 }
 $("btnOpenDb").onclick=()=>{ $("dbModalOverlay").hidden=false; renderDbTable(); };
 $("btnCloseDb").onclick=()=>{ $("dbModalOverlay").hidden=true; closeEmpForm(); };
