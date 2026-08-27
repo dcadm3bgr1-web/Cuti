@@ -275,6 +275,95 @@ table{font-size:19.5px !important;}
   }
 }
 </style>
+<style>
+/* Tema halaman terinspirasi warna Indomaret.
+   Area .paper sengaja tidak diberi override agar form cetak tetap asli. */
+body{background:#eef3f9;}
+.app-header{
+  background:#fff;
+  border-top:8px solid #003b7a;
+  border-bottom:4px solid #f4c400;
+  border-radius:0 0 12px 12px;
+  padding:18px 20px;
+  box-shadow:0 4px 14px rgba(0,59,122,.10);
+}
+.app-header h1{color:#003b7a;}
+.app-header h1::before{
+  content:"";
+  display:inline-block;
+  width:9px;
+  height:25px;
+  margin:0 9px 0 0;
+  vertical-align:-2px;
+  background:#e31d2b;
+  border-radius:2px;
+}
+.app-header p{color:#5c6675;}
+.eyebrow{color:#e31d2b !important;}
+.panel{
+  background:#fff;
+  border:2px solid #003b7a;
+  border-top:6px solid #003b7a;
+  box-shadow:0 5px 16px rgba(0,59,122,.12);
+}
+.panel h2{
+  color:#003b7a;
+  border-bottom:3px solid #f4c400;
+  padding-bottom:9px;
+}
+.grid label,.field-label{color:#4d5968;}
+.grid input,.grid select{
+  border-color:#b8c6d9;
+}
+.grid input:focus,.grid select:focus{
+  outline:2px solid rgba(0,59,122,.18);
+  border-color:#003b7a;
+}
+.grid input[readonly]{background:#eef2f7;color:#4d5968;}
+.small-btn{
+  border-color:#003b7a;
+  color:#003b7a;
+}
+.small-btn:hover{background:#fdf4bd;}
+.btn.primary{
+  background:#003b7a;
+  border-color:#003b7a;
+}
+.btn.primary:hover{background:#002b59;border-color:#002b59;}
+.btn.secondary{
+  background:#f4c400;
+  border-color:#f4c400;
+  color:#263b62;
+}
+.btn.secondary:hover{background:#e4b900;border-color:#e4b900;}
+.hint{color:#667085;}
+.modal{
+  border-top:6px solid #003b7a;
+  box-shadow:0 12px 30px rgba(0,59,122,.22);
+}
+.modal-header{
+  background:#003b7a;
+  color:#fff;
+}
+.modal-header h2{color:#fff;}
+.workspace{
+  grid-template-columns:minmax(420px,500px) minmax(0,1fr);
+}
+.panel{
+  max-width:500px !important;
+}
+.panel .grid input,
+.panel .grid select,
+.panel .input-with-list{
+  flex:1 1 auto;
+  max-width:none;
+}
+.paper-wrap{overflow:visible !important;}
+@media (max-width:1100px){
+  .workspace{grid-template-columns:1fr;}
+  .panel{max-width:none !important;}
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -544,41 +633,39 @@ function scalePaperPreview(){
  wrap.style.marginLeft="0";
  wrap.style.marginRight="0";
  const host=wrap.parentElement;
- const available=Math.max(1,host ? host.clientWidth : wrap.clientWidth);
- const scale=Math.min(1,available/wrap.offsetWidth);
- wrap.style.zoom=scale;
- wrap.style.marginLeft=`${Math.max(0,(available-wrap.offsetWidth*scale)/2)}px`;
- wrap.style.marginRight="0";
- scaleRequestPanel();
- }
- 
- /* Scale the input panel to the same visible height as the leave form.
-    The panel's internal structure and native sizing remain unchanged. */
- function scaleRequestPanel(){
-  const panel=document.querySelector(".panel"), paperFrame=$("paper")&&$("paper").parentElement;
-  if(!panel||!paperFrame) return;
- const paperWrap=paperFrame.parentElement;
-  if(window.matchMedia && window.matchMedia("print").matches) return;
-  if(!window.matchMedia("(min-width:1101px)").matches){
-   panel.style.zoom="1";
-   panel.style.marginRight="0";
-   if(paperWrap) paperWrap.style.transform="none";
-   return;
-  }
-  panel.style.zoom="1";
- panel.style.marginRight="0";
+ const workspace=host&&host.parentElement;
+ const panel=document.querySelector(".panel");
+ const paperWrap=host;
+ if(panel) panel.style.zoom="1";
+ wrap.style.zoom="1";
  if(paperWrap) paperWrap.style.transform="none";
- const panelWidth=panel.getBoundingClientRect().width;
-  const panelHeight=panel.offsetHeight;
-  const formHeight=paperFrame.getBoundingClientRect().height;
-  if(panelHeight>0&&formHeight>0){
-   const scale=Math.min(1,formHeight/panelHeight);
-   panel.style.zoom=String(scale);
-   /* Pull the form back by the panel width lost to visual scaling so
-      the original inter-column gap stays compact. */
-   const scaledPanelWidth=panel.getBoundingClientRect().width;
-   if(paperWrap) paperWrap.style.transform=`translateX(-${Math.max(0,panelWidth-scaledPanelWidth)}px)`;
-  }
+ const desktop=window.matchMedia("(min-width:1101px)").matches;
+ const available=Math.max(1,workspace ? workspace.clientWidth : (host ? host.clientWidth : wrap.clientWidth));
+ const formWidth=wrap.offsetWidth;
+ if(!desktop){
+  if(panel) panel.style.zoom="1";
+  wrap.style.zoom=Math.min(1,available/formWidth);
+  wrap.style.marginLeft="0";
+  wrap.style.marginRight="0";
+  return;
+ }
+ const gap=workspace ? (parseFloat(getComputedStyle(workspace).columnGap)||16) : 16;
+ const panelWidth=panel ? panel.getBoundingClientRect().width : 0;
+ const scale=panelWidth>0
+  ? Math.min(1,Math.max(0,(available-gap)/(panelWidth+formWidth)))
+  : Math.min(1,available/formWidth);
+ if(panel) panel.style.zoom=scale;
+ wrap.style.zoom=scale;
+ wrap.style.marginLeft="0";
+ wrap.style.marginRight="0";
+ if(panel&&paperWrap&&desktop){
+  const panelLeft=panel.getBoundingClientRect().left;
+  const paperLeft=paperWrap.getBoundingClientRect().left;
+  const columnWidth=Math.max(0,paperLeft-panelLeft-gap);
+  const scaledPanelWidth=panel.getBoundingClientRect().width;
+  const shift=Math.max(0,columnWidth-scaledPanelWidth);
+  paperWrap.style.transform=`translateX(-${shift}px)`;
+ }
 }
 window.addEventListener("resize",scalePaperPreview);
 window.addEventListener("beforeprint",()=>{
@@ -586,6 +673,7 @@ window.addEventListener("beforeprint",()=>{
  if(paper) { paper.style.zoom="1"; paper.style.transform="none"; }
  const host=wrap&&wrap.parentElement;
  if(wrap) { wrap.style.zoom="1"; wrap.style.marginLeft="auto"; wrap.style.marginRight="auto"; wrap.style.height="141mm"; }
+ if(host) host.style.transform="none";
  if(host) host.style.height="287mm";
 });
 window.addEventListener("afterprint",scalePaperPreview);
