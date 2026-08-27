@@ -71,6 +71,9 @@ body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color
 .table-wrap{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:10px;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 thead th{position:sticky;top:0;background:#f0f2f5;text-align:left;padding:10px;border-bottom:1px solid var(--line);}
+thead th.sortable{cursor:pointer;user-select:none;}
+thead th.sortable:hover{background:#e4e8ee;}
+.sort-ind{font-size:10px;color:var(--accent);}
 tbody td{padding:8px 10px;border-bottom:1px solid #eef0f3;vertical-align:middle;}
 .ttd-thumb{max-height:34px;max-width:90px;object-fit:contain;}
 .muted{color:var(--muted);font-size:12px;}
@@ -465,7 +468,14 @@ body{background:#eef3f9;}
 </div>
 <div class="table-wrap">
 <table id="empTable">
-<thead><tr><th>NIK</th><th>Nama</th><th>Bagian</th><th>Tgl Mulai Kerja</th><th>Tanda Tangan</th><th>Aksi</th></tr></thead>
+<thead><tr>
+<th class="sortable" data-sort="nik">NIK<span class="sort-ind"></span></th>
+<th class="sortable" data-sort="nama">Nama<span class="sort-ind"></span></th>
+<th class="sortable" data-sort="bagian">Bagian<span class="sort-ind"></span></th>
+<th class="sortable" data-sort="tglMasuk">Tgl Mulai Kerja<span class="sort-ind"></span></th>
+<th>Tanda Tangan</th>
+<th>Aksi</th>
+</tr></thead>
 <tbody id="empTableBody"></tbody>
 </table>
 </div>
@@ -543,10 +553,25 @@ function refreshPenggantiOptions(){
  EMPLOYEES.slice().sort((a,b)=>a.nama.localeCompare(b.nama)).forEach(e=>{const o=document.createElement("option");o.value=e.nama;o.textContent=e.nama;sel.appendChild(o);});
  if(EMPLOYEES.some(e=>e.nama===cur)) sel.value=cur;
 }
+let dbSort={key:null,dir:1};
 function renderDbTable(filter){
  const f=(filter||$("dbSearch").value||"").trim().toLowerCase();
  const tbody=$("empTableBody"); tbody.innerHTML="";
- EMPLOYEES.filter(e=>!f||e.nik.includes(f)||e.nama.toLowerCase().includes(f)||e.bagian.toLowerCase().includes(f)).forEach(e=>{
+ let rows=EMPLOYEES.filter(e=>!f||e.nik.includes(f)||e.nama.toLowerCase().includes(f)||e.bagian.toLowerCase().includes(f));
+ if(dbSort.key){
+  rows=rows.slice().sort((a,b)=>{
+   const va=(a[dbSort.key]||"").toString().toLowerCase();
+   const vb=(b[dbSort.key]||"").toString().toLowerCase();
+   if(va<vb) return -1*dbSort.dir;
+   if(va>vb) return 1*dbSort.dir;
+   return 0;
+  });
+ }
+ document.querySelectorAll("#empTable th.sortable").forEach(th=>{
+  const ind=th.querySelector(".sort-ind");
+  ind.textContent = th.dataset.sort===dbSort.key ? (dbSort.dir===1?" ▲":" ▼") : "";
+ });
+ rows.forEach(e=>{
   const tr=document.createElement("tr");
   tr.innerHTML=`<td>${e.nik}</td><td>${e.nama}</td><td>${e.bagian}</td><td>${formatDate(e.tglMasuk)}</td><td>${e.tandaTangan?`<img class="ttd-thumb" src="${e.tandaTangan}">`:'<span class="muted">-</span>'}</td><td class="row-actions"><button class="small-btn" data-edit="${e.nik}">Edit</button><button class="small-btn danger" data-del="${e.nik}">Hapus</button></td>`;
   tbody.appendChild(tr);
@@ -634,6 +659,13 @@ $("btnClearTtd").onclick=()=>{ pendingTtd=null; $("fTtdPreview").style.display="
 $("btnExportDb").onclick=exportDb;
 $("importDbFile").onchange=(e)=>{ if(e.target.files[0]) importDb(e.target.files[0]); e.target.value=""; };
 $("dbSearch").oninput=()=>renderDbTable();
+document.querySelectorAll("#empTable th.sortable").forEach(th=>{
+ th.addEventListener("click",()=>{
+  const key=th.dataset.sort;
+  if(dbSort.key===key) dbSort.dir*=-1; else { dbSort.key=key; dbSort.dir=1; }
+  renderDbTable();
+ });
+});
 $("fTtd").onchange=(e)=>{
  const file=e.target.files[0]; if(!file) return;
  const reader=new FileReader();
