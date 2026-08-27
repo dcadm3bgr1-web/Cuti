@@ -180,7 +180,7 @@ tbody td{padding:8px 10px;border-bottom:1px solid #eef0f3;vertical-align:middle;
 /* Font diperkecil menjadi 75% dari ukuran preview sebelumnya. */
 .eyebrow{font-size:18px !important;}
 .app-header h1{font-size:36px !important;}
-.app-header p{font-size:13px !important;line-height:1.35;}
+.app-header p{font-size:11px !important;line-height:1.35;}
 .btn{font-size:21px !important;}
 .panel h2{font-size:24px !important;}
 .grid label,.field-label{font-size:16.5px !important;}
@@ -549,6 +549,36 @@ function scalePaperPreview(){
  wrap.style.zoom=scale;
  wrap.style.marginLeft=`${Math.max(0,(available-wrap.offsetWidth*scale)/2)}px`;
  wrap.style.marginRight="0";
+ scaleRequestPanel();
+ }
+ 
+ /* Scale the input panel to the same visible height as the leave form.
+    The panel's internal structure and native sizing remain unchanged. */
+ function scaleRequestPanel(){
+  const panel=document.querySelector(".panel"), paperFrame=$("paper")&&$("paper").parentElement;
+  if(!panel||!paperFrame) return;
+ const paperWrap=paperFrame.parentElement;
+  if(window.matchMedia && window.matchMedia("print").matches) return;
+  if(!window.matchMedia("(min-width:1101px)").matches){
+   panel.style.zoom="1";
+   panel.style.marginRight="0";
+   if(paperWrap) paperWrap.style.transform="none";
+   return;
+  }
+  panel.style.zoom="1";
+ panel.style.marginRight="0";
+ if(paperWrap) paperWrap.style.transform="none";
+ const panelWidth=panel.getBoundingClientRect().width;
+  const panelHeight=panel.offsetHeight;
+  const formHeight=paperFrame.getBoundingClientRect().height;
+  if(panelHeight>0&&formHeight>0){
+   const scale=Math.min(1,formHeight/panelHeight);
+   panel.style.zoom=String(scale);
+   /* Pull the form back by the panel width lost to visual scaling so
+      the original inter-column gap stays compact. */
+   const scaledPanelWidth=panel.getBoundingClientRect().width;
+   if(paperWrap) paperWrap.style.transform=`translateX(-${Math.max(0,panelWidth-scaledPanelWidth)}px)`;
+  }
 }
 window.addEventListener("resize",scalePaperPreview);
 window.addEventListener("beforeprint",()=>{
