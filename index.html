@@ -74,6 +74,10 @@ thead th{position:sticky;top:0;background:#f0f2f5;text-align:left;padding:10px;b
 thead th.sortable{cursor:pointer;user-select:none;}
 thead th.sortable:hover{background:#e4e8ee;}
 .sort-ind{font-size:10px;color:var(--accent);}
+.sync-status{font-size:12px;margin-bottom:10px;padding:5px 10px;border-radius:6px;display:inline-block;}
+.sync-status.status-ok{background:#e6f4ea;color:#1e7d34;}
+.sync-status.status-loading{background:#eef2f7;color:#5c6675;}
+.sync-status.status-error{background:#fdeceb;color:#c0392b;}
 tbody td{padding:8px 10px;border-bottom:1px solid #eef0f3;vertical-align:middle;}
 .ttd-thumb{max-height:34px;max-width:90px;object-fit:contain;}
 .muted{color:var(--muted);font-size:12px;}
@@ -445,6 +449,7 @@ body{background:#eef3f9;}
 <div class="modal-overlay no-print" id="dbModalOverlay" hidden="">
 <div class="modal">
 <div class="modal-header"><h2>Database Karyawan</h2><button class="btn secondary" id="btnCloseDb">Tutup</button></div>
+<div class="sync-status" id="syncStatus"></div>
 <div class="modal-toolbar">
 <input id="dbSearch" placeholder="Cari NIK / Nama / Bagian">
 <div class="modal-toolbar-actions">
@@ -479,7 +484,7 @@ body{background:#eef3f9;}
 <tbody id="empTableBody"></tbody>
 </table>
 </div>
-<div class="hint">Perubahan hanya tersimpan di memori halaman ini. Gunakan <strong>Export Excel</strong> untuk menyimpan database ke file .xlsx, dan <strong>Import Excel</strong> untuk memuatnya kembali lain waktu.</div>
+<div class="hint">Data karyawan otomatis tersinkron ke cloud (Google Sheets) — perubahan yang kamu buat akan terlihat oleh semua orang yang membuka form ini. Gunakan <strong>Export Excel</strong> untuk cadangan manual, dan <strong>Import Excel</strong> untuk memuat data dari file.</div>
 </div>
 </div>
 </main></div>
@@ -603,13 +608,13 @@ function saveEmp(){
  const record={nama,nik,bagian,tglMasuk,tandaTangan:pendingTtd||null};
  if(origNik){ const idx=EMPLOYEES.findIndex(x=>x.nik===origNik); EMPLOYEES[idx]=record; }
  else { EMPLOYEES.push(record); }
- closeEmpForm(); refreshAfterDbChange();
+ closeEmpForm(); refreshAfterDbChange(); saveToCloud();
 }
 function deleteEmp(nik){
  const e=EMPLOYEES.find(x=>x.nik===nik); if(!e) return;
  if(!confirm(`Hapus data ${e.nama} (NIK ${nik})?`)) return;
  EMPLOYEES=EMPLOYEES.filter(x=>x.nik!==nik);
- refreshAfterDbChange();
+ refreshAfterDbChange(); saveToCloud();
 }
 function exportDb(){
  const rows=EMPLOYEES.map(e=>({NIK:e.nik,Nama:e.nama,Bagian:e.bagian,"Tgl Mulai Kerja":e.tglMasuk||"","Tanda Tangan (base64)":e.tandaTangan||""}));
@@ -634,7 +639,7 @@ function importDb(file){
     tandaTangan:String(r["Tanda Tangan (base64)"]??"").trim()||null
    })).filter(r=>r.nik);
    if(!data.length) throw new Error("Tidak ada baris data yang valid");
-   EMPLOYEES=data; refreshAfterDbChange();
+   EMPLOYEES=data; refreshAfterDbChange(); saveToCloud();
    alert("Database berhasil dimuat ("+data.length+" karyawan).");
   }catch(err){ alert("Gagal memuat file Excel: "+err.message); }
  };
@@ -650,7 +655,7 @@ function formatExcelDate(v){
  if(!isNaN(d)) return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
  return "";
 }
-$("btnOpenDb").onclick=()=>{ $("dbModalOverlay").hidden=false; renderDbTable(); };
+$("btnOpenDb").onclick=()=>{ $("dbModalOverlay").hidden=false; renderDbTable(); loadFromCloud(); };
 $("btnCloseDb").onclick=()=>{ $("dbModalOverlay").hidden=true; closeEmpForm(); };
 $("btnAddEmp").onclick=()=>openEmpForm(null);
 $("btnCancelEmp").onclick=closeEmpForm;
@@ -702,8 +707,54 @@ $("btnFind").onclick=findEmployee; $("nik").onchange=findEmployee; $("nik").onin
 ["hakCuti","cutiDiambil","mulaiCuti","masukLagi","alasan","kontak","pengganti"].forEach(id=>{$(id).oninput=sync;$(id).onchange=sync;});
 $("btnReset").onclick=()=>{document.querySelectorAll(".panel input").forEach(el=>{if(el.id==="hakCuti")el.value=DEFAULT_HAK_CUTI;else if(el.id==="cutiDiambil")el.value=0;else el.value="";});$("pengganti").value="";sync();};
 $("btnPrint").onclick=()=>{sync();window.print();};
+const CLOUD_SYNC_URL="https://script.google.com/macros/s/AKfycbzkjxrQUM1r8ejfvL2stx24N-LkjdoV1wtDSt2E_scQlqTiY3jjzzBtpR8zBz-pW978fQ/exec";
+function setSyncStatus(state){
+ const el=$("syncStatus"); if(!el) return;
+ const map={
+  loading:["Menyambungkan ke cloud…","status-loading"],
+  ok:["Tersambung ke cloud","status-ok"],
+  saving:["Menyimpan ke cloud…","status-loading"],
+  error:["Gagal sinkron — perubahan hanya tersimpan lokal","status-error"],
+  offline:["Offline — perubahan hanya tersimpan lokal","status-error"]
+ };
+ const [text,cls]=map[state]||["",""];
+ el.textContent=text; el.className="sync-status "+cls;
+}
+async function loadFromCloud(){
+ if(!CLOUD_SYNC_URL) return;
+ setSyncStatus("loading");
+ try{
+  const res=await fetch(CLOUD_SYNC_URL,{method:"GET"});
+  const json=await res.json();
+  if(!json.ok) throw new Error(json.error||"Respon tidak valid");
+  if(Array.isArray(json.data) && json.data.length){
+   EMPLOYEES=json.data;
+   refreshAfterDbChange();
+  } else {
+   await saveToCloud();
+  }
+  setSyncStatus("ok");
+ }catch(err){
+  console.error("loadFromCloud gagal:",err);
+  setSyncStatus("offline");
+ }
+}
+async function saveToCloud(){
+ if(!CLOUD_SYNC_URL) return;
+ setSyncStatus("saving");
+ try{
+  const res=await fetch(CLOUD_SYNC_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(EMPLOYEES)});
+  const json=await res.json();
+  if(!json.ok) throw new Error(json.error||"Gagal menyimpan");
+  setSyncStatus("ok");
+ }catch(err){
+  console.error("saveToCloud gagal:",err);
+  setSyncStatus("error");
+ }
+}
 refreshPenggantiOptions();
 sync();
+loadFromCloud();
 
 /* Scale the complete form on screen without changing its original
    canvas dimensions or typography. Printing always uses the native size. */
