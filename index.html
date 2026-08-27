@@ -33,6 +33,7 @@ body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color
 .small-btn{border:1px solid var(--line);background:#fff;border-radius:7px;padding:0 10px;cursor:pointer;font-size:12px;}
 .hint{margin-top:14px;font-size:12px;color:var(--muted);font-style:italic;}
 .paper-wrap{display:flex;justify-content:center;padding:16px;}
+.paper-column{width:200mm;flex:0 0 auto;}
 .panel-actions{display:flex;justify-content:flex-end;margin-top:12px;}
 .panel-actions .btn,.form-actions .btn{padding:6px 10px;font-size:12px;}
 .form-actions{display:flex;justify-content:flex-end;align-items:center;gap:8px;width:100%;margin-top:12px;}
@@ -251,6 +252,13 @@ table{font-size:19.5px !important;}
     margin: 0 !important;
   }
 
+  .paper-column {
+    width: 200mm !important;
+    max-width: none !important;
+    flex: 0 0 auto !important;
+    transform-origin: top left;
+  }
+
   .paper-frame {
     width: 200mm !important;
     height: 141mm !important;
@@ -389,8 +397,9 @@ body{background:#eef3f9;}
 </div>
 <div class="panel-actions no-print"><button class="btn secondary" id="btnOpenDb">Kelola Database</button></div>
 </section>
-<section class="paper-wrap">
-<div class="paper-frame"><div class="paper" id="paper">
+ <section class="paper-wrap">
+ <div class="paper-column">
+ <div class="paper-frame"><div class="paper" id="paper">
 <div class="form-title">FORM PERMOHONAN CUTI</div>
 <div class="form-body">
 <div class="row"><div class="label">NIK</div><div class="colon">:</div><div class="value" id="pNik">-</div></div>
@@ -407,8 +416,9 @@ body{background:#eef3f9;}
 </div>
 <div class="date-place" id="pTempatTanggal">Bogor, -</div>
 <div class="approval"><div class="approval-head"><div class="approval-label approval-center-label">Menyetujui / tidak menyetujui</div></div><div class="approval-head" aria-hidden="true"></div><div class="approval-col"><div class="approval-label">Atasan YBS</div><div class="approval-name approval-name-placeholder" aria-hidden="true">&nbsp;</div><div class="signature-space"></div></div><div class="approval-col"><div class="approval-label">Pemohon</div><div class="approval-name" id="pPemohon">-</div><div class="signature-space" id="pPemohonTtd"></div></div></div>
-</div></div>
-<div class="form-actions no-print"><button class="btn secondary" id="btnReset">Reset</button><button class="btn primary" id="btnPrint">Cetak / Simpan PDF</button></div>
+ </div></div>
+ <div class="form-actions no-print"><button class="btn secondary" id="btnReset">Reset</button><button class="btn primary" id="btnPrint">Cetak / Simpan PDF</button></div>
+ </div>
 </section>
 
 <div class="modal-overlay no-print" id="dbModalOverlay" hidden="">
@@ -626,27 +636,27 @@ sync();
 /* Scale the complete form on screen without changing its original
    canvas dimensions or typography. Printing always uses the native size. */
 function scalePaperPreview(){
- const paper=$("paper"), wrap=paper&&paper.parentElement;
- if(!paper||!wrap) return;
+ const paper=$("paper"), wrap=paper&&paper.parentElement, column=wrap&&wrap.parentElement;
+ if(!paper||!wrap||!column) return;
  if(window.matchMedia && window.matchMedia("print").matches) return;
- wrap.style.zoom="1";
- wrap.style.marginLeft="0";
- wrap.style.marginRight="0";
- const host=wrap.parentElement;
+ column.style.zoom="1";
+ column.style.marginLeft="0";
+ column.style.marginRight="0";
+ const host=column.parentElement;
  const workspace=host&&host.parentElement;
  const panel=document.querySelector(".panel");
  const paperWrap=host;
  if(panel) panel.style.zoom="1";
- wrap.style.zoom="1";
+ column.style.zoom="1";
  if(paperWrap) paperWrap.style.transform="none";
  const desktop=window.matchMedia("(min-width:1101px)").matches;
  const available=Math.max(1,workspace ? workspace.clientWidth : (host ? host.clientWidth : wrap.clientWidth));
- const formWidth=wrap.offsetWidth;
+ const formWidth=column.offsetWidth;
  if(!desktop){
   if(panel) panel.style.zoom="1";
-  wrap.style.zoom=Math.min(1,available/formWidth);
-  wrap.style.marginLeft="0";
-  wrap.style.marginRight="0";
+   column.style.zoom=Math.min(1,available/formWidth);
+   column.style.marginLeft="0";
+   column.style.marginRight="0";
   return;
  }
  const gap=workspace ? (parseFloat(getComputedStyle(workspace).columnGap)||16) : 16;
@@ -655,9 +665,9 @@ function scalePaperPreview(){
   ? Math.min(1,Math.max(0,(available-gap)/(panelWidth+formWidth)))
   : Math.min(1,available/formWidth);
  if(panel) panel.style.zoom=scale;
- wrap.style.zoom=scale;
- wrap.style.marginLeft="0";
- wrap.style.marginRight="0";
+ column.style.zoom=scale;
+ column.style.marginLeft="0";
+ column.style.marginRight="0";
  if(panel&&paperWrap&&desktop){
   const panelLeft=panel.getBoundingClientRect().left;
   const paperLeft=paperWrap.getBoundingClientRect().left;
@@ -669,10 +679,11 @@ function scalePaperPreview(){
 }
 window.addEventListener("resize",scalePaperPreview);
 window.addEventListener("beforeprint",()=>{
- const paper=$("paper"), wrap=paper&&paper.parentElement;
+  const paper=$("paper"), wrap=paper&&paper.parentElement, column=wrap&&wrap.parentElement;
  if(paper) { paper.style.zoom="1"; paper.style.transform="none"; }
- const host=wrap&&wrap.parentElement;
- if(wrap) { wrap.style.zoom="1"; wrap.style.marginLeft="auto"; wrap.style.marginRight="auto"; wrap.style.height="141mm"; }
+  const host=column&&column.parentElement;
+  if(column) { column.style.zoom="1"; column.style.marginLeft="auto"; column.style.marginRight="auto"; }
+  if(wrap) { wrap.style.zoom="1"; wrap.style.marginLeft="auto"; wrap.style.marginRight="auto"; wrap.style.height="141mm"; }
  if(host) host.style.transform="none";
  if(host) host.style.height="287mm";
 });
