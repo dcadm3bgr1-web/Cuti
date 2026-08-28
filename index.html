@@ -64,10 +64,10 @@ body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color
 
 
 
-.modal-overlay{position:fixed;inset:0;background:rgba(20,24,34,.45);display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;z-index:50;overflow-y:auto;}
+.modal-overlay{position:fixed !important;inset:0 !important;background:rgba(20,24,34,.45);display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;z-index:2147483647 !important;overflow-y:auto;pointer-events:auto !important;}
 .modal-overlay[hidden]{display:none;}
-.modal{background:#fff;border-radius:12px;max-width:920px;width:100%;padding:24px;box-shadow:0 12px 32px rgba(0,0,0,.18);}
-.modal-header{position:relative;z-index:10001;pointer-events:auto;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.modal{position:relative !important;z-index:2147483647 !important;background:#fff;border-radius:12px;max-width:920px;width:100%;padding:24px;box-shadow:0 12px 32px rgba(0,0,0,.18);pointer-events:auto !important;}
+.modal-header{position:relative;z-index:2147483647;pointer-events:auto !important;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
 .modal-header h2{margin:0;font-size:18px;}
 .modal-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
 .modal-toolbar input{padding:8px 10px;border:1px solid var(--line);border-radius:7px;font-size:13px;min-width:220px;}
@@ -524,9 +524,14 @@ Kelola Database</button></div>
 <div class="modal-overlay no-print" id="dbModalOverlay" hidden="">
 <div class="modal">
 <div class="modal-header"><h2>Database Karyawan</h2><button type="button" class="btn secondary" id="btnCloseDb"
-onclick="event.preventDefault();event.stopPropagation();var o=document.getElementById('dbModalOverlay');if(o){o.hidden=true;o.style.display='none';}}">
+style="position:relative;z-index:2147483647 !important;pointer-events:auto !important;"
+onclick="(function(e){if(e)e.stopPropagation();var o=document.getElementById('dbModalOverlay');if(o){o.hidden=true;o.style.display='none';}})(event)">
 Tutup</button></div>
-<div class="sync-status" id="syncStatus"></div>
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+  <div class="sync-status" id="syncStatus"></div>
+  <button type="button" class="small-btn" id="btnRetryCloud"
+    onclick="try{loadFromCloud()}catch(e){console.error(e)}">Muat Ulang Cloud</button>
+</div>
 <div class="modal-toolbar">
 <input id="dbSearch" placeholder="Cari NIK / Nama / Bagian">
 <div class="modal-toolbar-actions">
@@ -732,26 +737,33 @@ function formatExcelDate(v){
  if(!isNaN(d)) return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
  return "";
 }
-$("btnOpenDb").addEventListener("click",(e)=>{
-  e.preventDefault();
-  e.stopPropagation();
-  const overlay=$("dbModalOverlay");
-  if(!overlay) return;
-  overlay.hidden=false;
-  overlay.style.display="flex";
-  renderDbTable();
-  // Sinkronisasi cloud dijalankan setelah modal terbuka.
-  setTimeout(()=>{
-    try{ loadFromCloud(); }catch(err){ console.error("Cloud sync:",err); }
-  },0);
-});
-$("btnCloseDb").addEventListener("click",(e)=>{
-  e.preventDefault();
-  e.stopPropagation();
-  const o=$("dbModalOverlay");
-  if(o){o.hidden=true;o.style.display="none";}
-  closeEmpForm();
-});
+document.addEventListener("click",(e)=>{
+  const openBtn=e.target.closest && e.target.closest("#btnOpenDb");
+  if(openBtn){
+    e.preventDefault();
+    e.stopPropagation();
+    const overlay=document.getElementById("dbModalOverlay");
+    if(overlay){
+      overlay.hidden=false;
+      overlay.style.display="flex";
+      renderDbTable();
+      setTimeout(()=>{try{loadFromCloud();}catch(err){console.error(err);}},50);
+    }
+    return;
+  }
+
+  const closeBtn=e.target.closest && e.target.closest("#btnCloseDb");
+  if(closeBtn){
+    e.preventDefault();
+    e.stopPropagation();
+    const overlay=document.getElementById("dbModalOverlay");
+    if(overlay){
+      overlay.hidden=true;
+      overlay.style.display="none";
+    }
+    return;
+  }
+}, true);
 $("btnAddEmp").onclick=()=>openEmpForm(null);
 $("btnCancelEmp").onclick=closeEmpForm;
 $("btnSaveEmp").onclick=saveEmp;
