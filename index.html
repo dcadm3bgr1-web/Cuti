@@ -185,16 +185,58 @@ tbody td{padding:8px 10px;border-bottom:1px solid #eef0f3;vertical-align:middle;
 
 </style>
 <style>
-/* Font diperkecil menjadi 75% dari ukuran preview sebelumnya. */
+/* =========================
+   SKALA PANEL DATA PENGAJUAN
+   Disesuaikan agar tinggi panel mendekati
+   tinggi formulir + tombol Cetak/Reset.
+   ========================= */
+.panel{
+  padding:12px !important;
+  max-width:420px !important;
+}
+.panel h2{
+  margin:0 0 10px !important;
+  font-size:15px !important;
+}
+.panel .grid{
+  gap:7px !important;
+}
+.panel .grid label{
+  gap:6px !important;
+  font-size:10px !important;
+  line-height:1.15 !important;
+}
+.panel .field-label{
+  flex:0 0 145px !important;
+  font-size:10px !important;
+}
+.panel .grid input,
+.panel .grid select{
+  font-size:12px !important;
+  padding:5px 7px !important;
+  min-height:28px !important;
+}
+.panel .input-with-list{
+  gap:5px !important;
+}
+.panel .small-btn{
+  font-size:11px !important;
+  padding:0 8px !important;
+  min-height:28px !important;
+}
+.panel-actions{
+  margin-top:9px !important;
+}
+.panel-actions .btn{
+  padding:5px 9px !important;
+  font-size:11px !important;
+}
+
+/* Pertahankan ukuran tampilan bagian lain. */
 .eyebrow{font-size:18px !important;}
 .app-header h1{font-size:36px !important;}
 .app-header p{font-size:11px !important;line-height:1.35;}
 .btn{font-size:21px !important;}
-.panel h2{font-size:24px !important;}
-.grid label,.field-label{font-size:16.5px !important;}
-.grid input,.grid select{font-size:19.5px !important;}
-.small-btn{font-size:18px !important;}
-.hint{font-size:18px !important;}
 .paper{font-size:15.25px !important;}
 .form-title{font-size:26px !important;margin-bottom:14px !important;}
 .modal-header h2{font-size:27px !important;}
@@ -214,8 +256,31 @@ table{font-size:19.5px !important;}
 .paper .approval-head{min-width:0;}
 .paper .approval-head .approval-label{margin-bottom:4px;}
 .paper .approval-col{min-width:0;flex:none;}
-.paper .signature-space{width:50%;margin-left:auto;margin-right:auto;}
-.paper .approval-name{width:50%;margin-left:auto;margin-right:auto;margin-top:0;margin-bottom:4px;}
+.paper .signature-space{
+  width:70%;
+  height:52px;
+  margin-left:auto;
+  margin-right:auto;
+  position:relative;
+  z-index:2;
+}
+.paper .signature-space img{
+  max-height:62px !important;
+  max-width:150px !important;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+  transform:translateY(10px);
+}
+.paper .approval-name{
+  width:50%;
+  margin-left:auto;
+  margin-right:auto;
+  margin-top:-2px;
+  margin-bottom:4px;
+  position:relative;
+  z-index:1;
+}
 .paper .leave-number-row .value{position:relative;padding-left:0;padding-right:calc(26ch - 6px);text-align:right;}
 .paper .leave-number-row .leave-number{position:absolute;left:calc(4ch + 6px);top:0;}
 .paper .leave-number-row .leave-unit{display:block;white-space:nowrap;}
@@ -546,7 +611,7 @@ function sync() {
  const y=new Date().getFullYear(); $("pTahun1").textContent=y; $("pTahun2").textContent=y+1; $("pTempatTanggal").textContent=todayPlace();
  const emp=EMPLOYEES.find(x=>x.nik===$("nik").value.trim());
  const ttdWrap=$("pPemohonTtd");
- ttdWrap.innerHTML=(emp&&emp.tandaTangan)?`<img src="${emp.tandaTangan}" style="max-height:44px;max-width:110px;object-fit:contain;">`:"";
+ ttdWrap.innerHTML=(emp&&emp.tandaTangan)?`<img src="${emp.tandaTangan}" alt="Tanda tangan pemohon">`:"";
 }
 
 /* ===== Database Karyawan (CRUD) ===== */
@@ -683,12 +748,32 @@ $("fTtd").onchange=(e)=>{
    ctx.drawImage(img,0,0);
    try{
     const imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
-    const d=imgData.data;
-    const threshold=235;
-    for(let i=0;i<d.length;i+=4){
-     if(d[i]>=threshold && d[i+1]>=threshold && d[i+2]>=threshold){ d[i+3]=0; }
-    }
-    ctx.putImageData(imgData,0,0);
+     const d=imgData.data;
+
+     /*
+      * Membersihkan background tanda tangan:
+      * putih, abu-abu muda, dan krem muda dibuat transparan.
+      * Semakin terang piksel, semakin transparan.
+      * Tinta yang gelap tetap dipertahankan.
+      */
+     const bgStart=245; // terang sekali -> transparan penuh
+     const bgEnd=190;   // di bawah ini dianggap tinta/warna utama
+
+     for(let i=0;i<d.length;i+=4){
+       const r=d[i], g=d[i+1], b=d[i+2];
+       const brightness=(0.299*r)+(0.587*g)+(0.114*b);
+
+       if(brightness >= bgStart){
+         d[i+3]=0;
+       }else if(brightness > bgEnd){
+         const alpha=Math.round(
+           255 * (1 - ((brightness-bgEnd)/(bgStart-bgEnd)))
+         );
+         d[i+3]=Math.max(0,Math.min(255,alpha));
+       }
+     }
+
+     ctx.putImageData(imgData,0,0);
    }catch(err){}
    const pngDataUrl=canvas.toDataURL("image/png");
    pendingTtd=pngDataUrl; $("fTtdPreview").src=pngDataUrl; $("fTtdPreview").style.display="inline-block";
