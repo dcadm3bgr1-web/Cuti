@@ -67,7 +67,7 @@ body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color
 .modal-overlay{position:fixed;inset:0;background:rgba(20,24,34,.45);display:flex;align-items:flex-start;justify-content:center;padding:32px 16px;z-index:50;overflow-y:auto;}
 .modal-overlay[hidden]{display:none;}
 .modal{background:#fff;border-radius:12px;max-width:920px;width:100%;padding:24px;box-shadow:0 12px 32px rgba(0,0,0,.18);}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+.modal-header{position:relative;z-index:10001;pointer-events:auto;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
 .modal-header h2{margin:0;font-size:18px;}
 .modal-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
 .modal-toolbar input{padding:8px 10px;border:1px solid var(--line);border-radius:7px;font-size:13px;min-width:220px;}
@@ -523,7 +523,9 @@ Kelola Database</button></div>
 
 <div class="modal-overlay no-print" id="dbModalOverlay" hidden="">
 <div class="modal">
-<div class="modal-header"><h2>Database Karyawan</h2><button type="button" class="btn secondary" id="btnCloseDb">Tutup</button></div>
+<div class="modal-header"><h2>Database Karyawan</h2><button type="button" class="btn secondary" id="btnCloseDb"
+onclick="event.preventDefault();event.stopPropagation();var o=document.getElementById('dbModalOverlay');if(o){o.hidden=true;o.style.display='none';}}">
+Tutup</button></div>
 <div class="sync-status" id="syncStatus"></div>
 <div class="modal-toolbar">
 <input id="dbSearch" placeholder="Cari NIK / Nama / Bagian">
@@ -743,7 +745,13 @@ $("btnOpenDb").addEventListener("click",(e)=>{
     try{ loadFromCloud(); }catch(err){ console.error("Cloud sync:",err); }
   },0);
 });
-$("btnCloseDb").onclick=()=>{ $("dbModalOverlay").hidden=true; closeEmpForm(); };
+$("btnCloseDb").addEventListener("click",(e)=>{
+  e.preventDefault();
+  e.stopPropagation();
+  const o=$("dbModalOverlay");
+  if(o){o.hidden=true;o.style.display="none";}
+  closeEmpForm();
+});
 $("btnAddEmp").onclick=()=>openEmpForm(null);
 $("btnCancelEmp").onclick=closeEmpForm;
 $("btnSaveEmp").onclick=saveEmp;
