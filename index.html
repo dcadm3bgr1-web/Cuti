@@ -24,7 +24,7 @@ body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
 .btn.secondary{color:var(--muted);}
 .workspace{display:grid;grid-template-columns:minmax(320px,420px) minmax(0,1fr);gap:16px;align-items:stretch;}
-.panel{order:1;}
+.panel{order:1;position:relative;z-index:20;}
 .paper-wrap{order:2;}
 @media (max-width:1100px){.workspace{grid-template-columns:1fr;}.panel{max-width:none;}}@media (max-width:900px){.workspace{grid-template-columns:1fr;}}
 .panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;max-width:420px;width:100%;}
@@ -42,7 +42,7 @@ body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color
 .hint{margin-top:14px;font-size:12px;color:var(--muted);font-style:italic;}
 .paper-wrap{display:flex;justify-content:center;padding:16px;}
 .paper-column{width:200mm;flex:0 0 auto;display:flex;flex-direction:column;}
-.panel-actions{display:flex;justify-content:flex-end;margin-top:12px;}
+.panel-actions{display:flex;justify-content:flex-end;margin-top:12px;position:relative;z-index:1000;pointer-events:auto;}
 .panel-actions .btn,.form-actions .btn{padding:6px 10px;font-size:12px;}
 .form-actions{display:flex;justify-content:flex-end;align-items:center;gap:8px;width:100%;margin-top:auto;}
 .paper-frame{width:200mm;height:141mm;flex:0 0 auto;}
@@ -493,7 +493,9 @@ body{background:#eef3f9;}
 <label><span class="field-label">Alamat Cuti / No. Yang Bisa Dihubungi</span><input id="kontak" placeholder="Alamat atau nomor telepon"></label>
 <label><span class="field-label">Pengganti Selama Cuti</span><select id="pengganti"><option value="">- Pilih -</option></select></label>
 </div>
-<div class="panel-actions no-print"><button type="button" class="btn secondary" id="btnOpenDb">Kelola Database</button></div>
+<div class="panel-actions no-print"><button type="button" class="btn secondary" id="btnOpenDb"
+onclick="event.preventDefault();var o=document.getElementById('dbModalOverlay');if(o){o.hidden=false;o.style.display='flex';}">
+Kelola Database</button></div>
 </section>
  <section class="paper-wrap">
  <div class="paper-column">
@@ -734,9 +736,12 @@ $("btnOpenDb").addEventListener("click",(e)=>{
   const overlay=$("dbModalOverlay");
   if(!overlay) return;
   overlay.hidden=false;
+  overlay.style.display="flex";
   renderDbTable();
-  // Jalankan sinkronisasi setelah modal berhasil dibuka.
-  setTimeout(()=>loadFromCloud(),0);
+  // Sinkronisasi cloud dijalankan setelah modal terbuka.
+  setTimeout(()=>{
+    try{ loadFromCloud(); }catch(err){ console.error("Cloud sync:",err); }
+  },0);
 });
 $("btnCloseDb").onclick=()=>{ $("dbModalOverlay").hidden=true; closeEmpForm(); };
 $("btnAddEmp").onclick=()=>openEmpForm(null);
