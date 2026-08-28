@@ -1,5 +1,13 @@
 <!DOCTYPE html>
 <html lang="id"><head>
+<!--
+  VERSI SIAP HOSTING ONLINE
+  - Host file ini pada HTTPS (mis. GitHub Pages / Cloudflare Pages).
+  - Database tetap menggunakan Google Apps Script pada CLOUD_SYNC_URL.
+  - Saat dibuka online, database cloud dimuat otomatis.
+  - Jika offline, aplikasi tetap dapat digunakan dengan data lokal.
+-->
+
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Form Permohonan Cuti</title>
 <style>
@@ -805,41 +813,129 @@ function setSyncStatus(state){
  const [text,cls]=map[state]||["",""];
  el.textContent=text; el.className="sync-status "+cls;
 }
-async function loadFromCloud(){
+function normalizeEmployee_(e){
+ if(!e || typeof e!=="object") return null;
+ return {
+  nik: e.nik==null ? "" : String(e.nik),
+  nama: e.nama==null ? "" : String(e.nama),
+  bagian: e.bagian==null ? "" : String(e.bagian),
+  tglMasuk: e.tglMasuk==null ? "" : String(e.tglMasuk),
+  tandaTangan: e.tandaTangan || null
+ };
+}
+
+function loadFromCloud(){
  if(!CLOUD_SYNC_URL) return;
  setSyncStatus("loading");
- try{
-  const res=await fetch(CLOUD_SYNC_URL,{method:"GET"});
-  const json=await res.json();
-  if(!json.ok) throw new Error(json.error||"Respon tidak valid");
-  if(Array.isArray(json.data) && json.data.length){
-   EMPLOYEES=json.data;
-   refreshAfterDbChange();
-  } else {
-   await saveToCloud();
+
+ const callbackName="cloudCallback_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+ const script=document.createElement("script");
+ let finished=false;
+
+ window[callbackName]=(json)=>{
+  if(finished) return;
+  finished=true;
+  try{
+   if(!json || !json.ok) throw new Error((json&&json.error)||"Respon cloud tidak valid");
+   if(Array.isArray(json.data)){
+    EMPLOYEES=json.data.map(normalizeEmployee_).filter(Boolean);
+    refreshAfterDbChange();
+    localStorage.setItem("cuti_employees",JSON.stringify(EMPLOYEES));
+   }
+   setSyncStatus("ok");
+  }catch(err){
+   console.error("loadFromCloud JSONP gagal:",err);
+   setSyncStatus("error");
+  }finally{
+   cleanup();
   }
-  setSyncStatus("ok");
- }catch(err){
-  console.error("loadFromCloud gagal:",err);
+ };
+
+ const cleanup=()=>{
+  try{ delete window[callbackName]; }catch(e){ window[callbackName]=undefined; }
+  if(script.parentNode) script.parentNode.removeChild(script);
+ };
+
+ script.onerror=()=>{
+  if(finished) return;
+  finished=true;
+  console.error("loadFromCloud gagal: Google Apps Script tidak dapat diakses.");
   setSyncStatus("offline");
- }
+  cleanup();
+ };
+
+ script.src=CLOUD_SYNC_URL+"?callback="+encodeURIComponent(callbackName)+"&_="+Date.now();
+ document.body.appendChild(script);
+
+ setTimeout(()=>{
+  if(!finished){
+   finished=true;
+   console.error("loadFromCloud timeout.");
+   setSyncStatus("offline");
+   cleanup();
+  }
+ },15000);
 }
-async function saveToCloud(){
- if(!CLOUD_SYNC_URL) return;
+
+function saveToCloud(){
+ if(!CLOUD_SYNC_URL) return Promise.resolve(false);
  setSyncStatus("saving");
- try{
-  const res=await fetch(CLOUD_SYNC_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(EMPLOYEES)});
-  const json=await res.json();
-  if(!json.ok) throw new Error(json.error||"Gagal menyimpan");
-  setSyncStatus("ok");
- }catch(err){
-  console.error("saveToCloud gagal:",err);
-  setSyncStatus("error");
- }
+
+ return new Promise((resolve)=>{
+  const iframe=document.createElement("iframe");
+  iframe.name="cloudSaveFrame_"+Date.now();
+  iframe.style.display="none";
+  document.body.appendChild(iframe);
+
+  const form=document.createElement("form");
+  form.method="POST";
+  form.action=CLOUD_SYNC_URL;
+  form.target=iframe.name;
+  form.style.display="none";
+
+  const input=document.createElement("input");
+  input.type="hidden";
+  input.name="payload";
+  input.value=JSON.stringify(EMPLOYEES);
+
+  form.appendChild(input);
+  document.body.appendChild(form);
+
+  let done=false;
+  const finish=(ok)=>{
+   if(done) return;
+   done=true;
+   setSyncStatus(ok ? "ok" : "error");
+   setTimeout(()=>{
+    if(form.parentNode) form.parentNode.removeChild(form);
+    if(iframe.parentNode) iframe.parentNode.removeChild(iframe);
+   },500);
+   resolve(ok);
+  };
+
+  iframe.onload=()=>finish(true);
+  iframe.onerror=()=>finish(false);
+
+  try{
+   form.submit();
+   // Cross-origin form submission cannot expose the response body.
+   // Treat a successful submission as queued; next JSONP load verifies data.
+   setTimeout(()=>finish(true),2500);
+  }catch(err){
+   console.error("saveToCloud gagal:",err);
+   finish(false);
+  }
 }
+
 refreshPenggantiOptions();
 sync();
-loadFromCloud();
+
+// Saat aplikasi di-host melalui HTTPS, ambil database terbaru dari Google Apps Script.
+// Jika internet tidak tersedia, aplikasi tetap menggunakan data lokal.
+if (navigator.onLine) {
+  loadFromCloud();
+}
+window.addEventListener("online", () => loadFromCloud());
 
 /* Scale the complete form on screen without changing its original
    canvas dimensions or typography. Printing always uses the native size. */
