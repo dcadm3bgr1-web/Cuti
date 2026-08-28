@@ -493,7 +493,7 @@ body{background:#eef3f9;}
 <label><span class="field-label">Alamat Cuti / No. Yang Bisa Dihubungi</span><input id="kontak" placeholder="Alamat atau nomor telepon"></label>
 <label><span class="field-label">Pengganti Selama Cuti</span><select id="pengganti"><option value="">- Pilih -</option></select></label>
 </div>
-<div class="panel-actions no-print"><button class="btn secondary" id="btnOpenDb">Kelola Database</button></div>
+<div class="panel-actions no-print"><button type="button" class="btn secondary" id="btnOpenDb">Kelola Database</button></div>
 </section>
  <section class="paper-wrap">
  <div class="paper-column">
@@ -521,13 +521,13 @@ body{background:#eef3f9;}
 
 <div class="modal-overlay no-print" id="dbModalOverlay" hidden="">
 <div class="modal">
-<div class="modal-header"><h2>Database Karyawan</h2><button class="btn secondary" id="btnCloseDb">Tutup</button></div>
+<div class="modal-header"><h2>Database Karyawan</h2><button type="button" class="btn secondary" id="btnCloseDb">Tutup</button></div>
 <div class="sync-status" id="syncStatus"></div>
 <div class="modal-toolbar">
 <input id="dbSearch" placeholder="Cari NIK / Nama / Bagian">
 <div class="modal-toolbar-actions">
-<button class="btn primary" id="btnAddEmp">+ Tambah Karyawan</button>
-<button class="btn secondary" id="btnExportDb">Export Excel</button>
+<button type="button" class="btn primary" id="btnAddEmp">+ Tambah Karyawan</button>
+<button type="button" class="btn secondary" id="btnExportDb">Export Excel</button>
 <label class="btn secondary file-btn">Import Excel<input type="file" id="importDbFile" accept=".xlsx,.xls" hidden=""></label>
 </div>
 </div>
@@ -542,7 +542,7 @@ body{background:#eef3f9;}
 <label>Pratinjau Tanda Tangan<img id="fTtdPreview" style="display:none;max-height:56px;max-width:160px;object-fit:contain;border:1px solid var(--line);border-radius:6px;padding:4px;"></label>
 </div>
 <input type="hidden" id="fOrigNik">
-<div class="modal-form-actions"><button class="btn primary" id="btnSaveEmp">Simpan</button><button class="btn secondary" id="btnCancelEmp">Batal</button><button class="btn secondary" id="btnClearTtd">Hapus Tanda Tangan</button></div>
+<div class="modal-form-actions"><button type="button" class="btn primary" id="btnSaveEmp">Simpan</button><button type="button" class="btn secondary" id="btnCancelEmp">Batal</button><button type="button" class="btn secondary" id="btnClearTtd">Hapus Tanda Tangan</button></div>
 </div>
 <div class="table-wrap">
 <table id="empTable">
@@ -728,7 +728,16 @@ function formatExcelDate(v){
  if(!isNaN(d)) return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
  return "";
 }
-$("btnOpenDb").onclick=()=>{ $("dbModalOverlay").hidden=false; renderDbTable(); loadFromCloud(); };
+$("btnOpenDb").addEventListener("click",(e)=>{
+  e.preventDefault();
+  e.stopPropagation();
+  const overlay=$("dbModalOverlay");
+  if(!overlay) return;
+  overlay.hidden=false;
+  renderDbTable();
+  // Jalankan sinkronisasi setelah modal berhasil dibuka.
+  setTimeout(()=>loadFromCloud(),0);
+});
 $("btnCloseDb").onclick=()=>{ $("dbModalOverlay").hidden=true; closeEmpForm(); };
 $("btnAddEmp").onclick=()=>openEmpForm(null);
 $("btnCancelEmp").onclick=closeEmpForm;
