@@ -238,13 +238,13 @@ tbody td{padding:8px 10px;border-bottom:1px solid #eef0f3;vertical-align:middle;
 /* ===== PIN akses tombol Database / Spreadsheet ===== */
 .pin-overlay{position:fixed !important;inset:0 !important;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:20px;z-index:2147483647 !important;pointer-events:auto !important;}
 .pin-overlay[hidden]{display:none;}
-.pin-modal{position:relative;z-index:2147483647;width:min(290px,88vw);background:#fff;border-radius:12px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.25);text-align:center;animation:pinModalIn .18s ease-out;}
+.pin-modal{position:relative;z-index:2147483647;width:min(250px,86vw);background:#fff;border-radius:11px;padding:12px;box-shadow:0 18px 50px rgba(0,0,0,.25);text-align:center;animation:pinModalIn .18s ease-out;}
 @keyframes pinModalIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-.pin-icon{width:52px;height:52px;margin:0 auto 12px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eef4ff;color:#1769e0;}
-.pin-icon svg{width:27px;height:27px;stroke:currentColor;}
-.pin-modal h3{margin:0 0 7px;font-size:18px;}
-.pin-modal p{margin:0 0 16px;color:#667085;font-size:13px;}
-.pin-input{width:100%;box-sizing:border-box;text-align:center;letter-spacing:7px;font-size:22px;font-weight:700;padding:10px 12px;border:1px solid #d0d5dd;border-radius:9px;outline:none;}
+.pin-icon{width:42px;height:42px;margin:0 auto 9px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eef4ff;color:#1769e0;}
+.pin-icon svg{width:23px;height:23px;stroke:currentColor;}
+.pin-modal h3{margin:0 0 5px;font-size:16px;
+.pin-modal p{margin:0 0 10px;color:#667085;font-size:11px;line-height:1.35;
+.pin-input{width:100%;box-sizing:border-box;text-align:center;letter-spacing:6px;font-size:19px;font-weight:700;padding:8px 10px;border:1px solid #d0d5dd;border-radius:9px;outline:none;}
 .pin-input:focus{border-color:#1769e0;box-shadow:0 0 0 3px rgba(23,105,224,.12);}
 .pin-error{min-height:18px;margin-top:8px;color:#d92d20;font-size:12px;font-weight:600;}
 .pin-actions{display:flex;justify-content:center;gap:8px;margin-top:8px;}
@@ -586,6 +586,430 @@ body{background:#eef3f9;}
 }
 
 </style>
+
+<style id="indomaret-theme">
+:root{
+  --ink:#172033;
+  --muted:#667085;
+  --line:#d7dbe3;
+  --accent:#e31b23;
+  --paper:#fff;
+  --bg:#f3f5f8;
+  --blue:#005baa;
+  --yellow:#ffd400;
+  --red:#e31b23;
+}
+body{
+  background:
+    linear-gradient(180deg,#e31b23 0,#e31b23 7px,transparent 7px),
+    var(--bg);
+}
+.app{max-width:1000px;padding:18px 16px;}
+.app-header{
+  position:relative;
+  padding:18px 20px 16px;
+  margin-bottom:18px;
+  background:#fff;
+  border:1px solid #e1e4e9;
+  border-top:5px solid var(--red);
+  border-radius:12px;
+  box-shadow:0 5px 18px rgba(16,24,40,.07);
+  overflow:hidden;
+}
+.app-header:after{
+  content:"";
+  position:absolute;
+  right:-35px;bottom:-45px;
+  width:145px;height:90px;
+  background:var(--yellow);
+  transform:rotate(-9deg);
+  opacity:.9;
+}
+.app-header h1{font-size:24px;font-weight:800;letter-spacing:-.02em;}
+.eyebrow{
+  color:var(--blue);
+  font-size:11px;
+  letter-spacing:.11em;
+}
+.app-header p{color:#667085;}
+.header-actions{position:relative;z-index:2;}
+.btn{
+  border:1px solid #d4d8df;
+  background:#fff;
+  color:#344054;
+  border-radius:8px;
+  box-shadow:0 2px 5px rgba(16,24,40,.05);
+  transition:.18s ease;
+}
+.btn:hover{border-color:#b8bec8;transform:translateY(-1px);}
+.btn.primary{
+  background:var(--red);
+  border-color:var(--red);
+  box-shadow:0 3px 8px rgba(227,27,35,.22);
+}
+.btn.primary:hover{background:#c9151d;border-color:#c9151d;}
+.btn.secondary:hover{color:var(--blue);}
+.panel{
+  background:#fff;
+  border:1px solid #dfe3e8;
+  border-top:4px solid var(--blue);
+  border-radius:12px;
+  padding:16px;
+  box-shadow:0 6px 20px rgba(16,24,40,.07);
+}
+.panel h2{
+  color:#172033;
+  font-weight:800;
+  position:relative;
+  padding-left:12px;
+}
+.panel h2:before{
+  content:"";
+  position:absolute;
+  left:0;top:1px;bottom:1px;
+  width:4px;border-radius:4px;
+  background:var(--yellow);
+}
+.grid input,.grid select{
+  border-color:#d5d9e0;
+  border-radius:7px;
+}
+.grid input:focus,.grid select:focus{
+  outline:none;
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px rgba(0,91,170,.10);
+}
+.small-btn{
+  border-color:#d5d9e0;
+}
+.small-btn:hover{
+  border-color:var(--blue);
+  color:var(--blue);
+}
+.hint{color:#7a8495;}
+.panel-actions .btn.primary,.form-actions .btn.primary{
+  background:var(--blue);
+  border-color:var(--blue);
+}
+.panel-actions .btn.primary:hover,.form-actions .btn.primary:hover{
+  background:#004b8d;border-color:#004b8d;
+}
+.sync-status{font-weight:600;}
+/* Tema popup/overlay, tanpa mengubah isi container utama */
+.modal-header{
+  border-bottom-color:#e5e7eb;
+}
+.pin-modal{
+  border-top:4px solid var(--red);
+  box-shadow:0 20px 55px rgba(16,24,40,.25);
+}
+.pin-icon{
+  background:rgba(227,27,35,.09);
+  color:var(--red);
+}
+.pin-input:focus{
+  border-color:var(--blue)!important;
+  box-shadow:0 0 0 3px rgba(0,91,170,.10);
+}
+.created-by-watermark{color:#005baa;}
+</style>
+
+
+<style id="indomaret-theme-strong">
+:root{
+  --accent:#c90016;
+  --blue:#004b93;
+  --yellow:#ffc400;
+  --bg:#e8ebf0;
+}
+body{
+  background:
+    linear-gradient(180deg,#c90016 0,#c90016 10px,transparent 10px),
+    #e8ebf0;
+}
+.app-header{
+  background:#fff;
+  border-top:7px solid #c90016;
+  box-shadow:0 7px 22px rgba(0,0,0,.12);
+}
+.app-header h1{color:#8f0010;font-weight:900;}
+.eyebrow{color:#004b93;font-weight:800;}
+.panel{
+  border-top:5px solid #004b93;
+  box-shadow:0 8px 24px rgba(0,0,0,.11);
+}
+.panel h2:before{background:#ffc400;}
+.btn.primary{
+  background:#c90016;
+  border-color:#c90016;
+}
+.btn.primary:hover{background:#a90012;border-color:#a90012;}
+.panel-actions .btn.primary,.form-actions .btn.primary{
+  background:#004b93;
+  border-color:#004b93;
+}
+.panel-actions .btn.primary:hover,.form-actions .btn.primary:hover{
+  background:#00376d;border-color:#00376d;
+}
+.small-btn:hover{border-color:#004b93;color:#004b93;}
+.grid input:focus,.grid select:focus{
+  border-color:#004b93;
+  box-shadow:0 0 0 3px rgba(0,75,147,.14);
+}
+.pin-modal{border-top:5px solid #c90016;}
+.pin-icon{
+  background:rgba(201,0,22,.12);
+  color:#c90016;
+}
+.pin-input:focus{
+  border-color:#004b93!important;
+  box-shadow:0 0 0 3px rgba(0,75,147,.14);
+}
+.created-by-watermark{color:#004b93;}
+</style>
+
+
+<style id="indomaret-brand-theme">
+:root{
+  --brand-red:#d50019;
+  --brand-red-dark:#b40014;
+  --brand-blue:#0054a6;
+  --brand-blue-dark:#003f7d;
+  --brand-yellow:#ffd100;
+  --brand-yellow-soft:#fff3b0;
+}
+/* Branding kuat pada area aplikasi, tanpa menyentuh container/form utama */
+body{
+  background:
+    linear-gradient(180deg,var(--brand-red) 0 8px,var(--brand-blue) 8px 13px,var(--brand-yellow) 13px 17px,#eef1f5 17px);
+}
+.app-header{
+  background:
+    linear-gradient(100deg,var(--brand-red) 0 48%,var(--brand-blue) 48% 100%);
+  color:#fff;
+  border:0;
+  border-radius:0 0 14px 14px;
+  padding:18px 20px 17px;
+  box-shadow:0 7px 20px rgba(0,0,0,.18);
+  overflow:hidden;
+}
+.app-header:before{
+  content:"";
+  position:absolute;
+  left:0;bottom:0;
+  width:100%;height:6px;
+  background:var(--brand-yellow);
+}
+.app-header:after{
+  content:"";
+  position:absolute;
+  right:-25px;top:-50px;
+  width:170px;height:170px;
+  border-radius:50%;
+  background:rgba(255,209,0,.20);
+}
+.app-header h1,.app-header p{color:#fff;}
+.eyebrow{
+  color:var(--brand-yellow);
+  font-weight:900;
+  letter-spacing:.14em;
+}
+.header-actions .btn{
+  border:2px solid rgba(255,255,255,.7);
+  background:#fff;
+  color:var(--brand-blue-dark);
+  font-weight:800;
+}
+.header-actions .btn.primary{
+  background:var(--brand-yellow);
+  border-color:var(--brand-yellow);
+  color:#222;
+}
+.header-actions .btn.primary:hover{
+  background:#ffe05a;
+  border-color:#ffe05a;
+}
+/* Panel pendukung memakai tiga warna brand secara konsisten */
+.panel{
+  position:relative;
+  border:1px solid #d5dae2;
+  border-top:0;
+  box-shadow:0 8px 24px rgba(0,0,0,.10);
+  overflow:hidden;
+}
+.panel:before{
+  content:"";
+  display:block;
+  height:5px;
+  margin:-16px -16px 14px;
+  background:linear-gradient(90deg,var(--brand-red) 0 50%,var(--brand-blue) 50% 82%,var(--brand-yellow) 82% 100%);
+}
+.panel h2:before{background:var(--brand-red);}
+.panel h2{color:var(--brand-blue-dark);}
+.btn.primary{
+  background:var(--brand-red);
+  border-color:var(--brand-red);
+}
+.btn.primary:hover{
+  background:var(--brand-red-dark);
+  border-color:var(--brand-red-dark);
+}
+.panel-actions .btn.primary,.form-actions .btn.primary{
+  background:var(--brand-blue);
+  border-color:var(--brand-blue);
+}
+.panel-actions .btn.primary:hover,.form-actions .btn.primary:hover{
+  background:var(--brand-blue-dark);
+  border-color:var(--brand-blue-dark);
+}
+.small-btn:hover{
+  border-color:var(--brand-red);
+  color:var(--brand-red);
+}
+.grid input:focus,.grid select:focus{
+  border-color:var(--brand-blue);
+  box-shadow:0 0 0 3px rgba(0,84,166,.13);
+}
+/* Checkbox/radio dan highlight memakai kuning sebagai aksen */
+input[type="checkbox"]:checked,input[type="radio"]:checked{
+  accent-color:var(--brand-red);
+}
+.sync-status.status-ok{color:var(--brand-blue);}
+.sync-status.status-loading{color:#9a7600;}
+.sync-status.status-error{color:var(--brand-red);}
+/* Database modal */
+#dbModalOverlay .modal{
+  border-top:6px solid transparent;
+  border-image:linear-gradient(90deg,var(--brand-red) 0 50%,var(--brand-blue) 50% 82%,var(--brand-yellow) 82% 100%) 1;
+  box-shadow:0 22px 55px rgba(0,0,0,.22);
+}
+.modal-header{
+  background:linear-gradient(90deg,rgba(213,0,25,.06),rgba(0,84,166,.06));
+}
+.modal-header h3{color:var(--brand-blue-dark);}
+.pin-modal{
+  border-top:6px solid var(--brand-red);
+}
+.pin-icon{
+  background:var(--brand-yellow-soft);
+  color:var(--brand-red);
+  border:2px solid var(--brand-yellow);
+}
+.pin-input:focus{
+  border-color:var(--brand-blue)!important;
+  box-shadow:0 0 0 3px rgba(0,84,166,.13);
+}
+.created-by-watermark{color:var(--brand-blue);}
+</style>
+
+
+<style id="indomaret-soft-theme">
+/* Latar brand: gradasi merah-biru-kuning yang sangat lembut */
+body{
+  background:
+    radial-gradient(ellipse at 0% 8%, rgba(213,0,25,.16) 0%, rgba(213,0,25,.07) 22%, transparent 46%),
+    radial-gradient(ellipse at 100% 92%, rgba(255,209,0,.18) 0%, rgba(255,209,0,.08) 24%, transparent 48%),
+    radial-gradient(ellipse at 88% 12%, rgba(0,84,166,.13) 0%, rgba(0,84,166,.05) 23%, transparent 45%),
+    linear-gradient(135deg,#fdfdfd 0%,#f7f9fc 48%,#fffdf6 100%);
+}
+/* Header lebih halus: putih/transparan dengan aksen brand tipis */
+.app-header{
+  background:rgba(255,255,255,.88);
+  color:#17324d;
+  border:1px solid rgba(0,84,166,.10);
+  border-top:3px solid rgba(213,0,25,.72);
+  border-radius:13px;
+  box-shadow:0 5px 18px rgba(31,45,61,.07);
+  backdrop-filter:blur(10px);
+  padding:17px 20px 15px;
+}
+.app-header:before{
+  content:"";
+  position:absolute;
+  left:0;bottom:0;
+  width:100%;height:3px;
+  background:linear-gradient(90deg,
+    rgba(213,0,25,.72) 0 48%,
+    rgba(0,84,166,.62) 48% 80%,
+    rgba(255,209,0,.72) 80% 100%);
+}
+.app-header:after{
+  content:"";
+  position:absolute;
+  right:-45px;top:-75px;
+  width:190px;height:190px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,209,0,.13),transparent 68%);
+}
+.app-header h1{color:#17324d;}
+.app-header p{color:#64748b;}
+.eyebrow{color:#b40014;font-weight:800;}
+.header-actions .btn{
+  border:1px solid #dbe2ea;
+  background:rgba(255,255,255,.82);
+  color:#174d80;
+  box-shadow:none;
+}
+.header-actions .btn.primary{
+  background:#0054a6;
+  border-color:#0054a6;
+  color:#fff;
+}
+.header-actions .btn.primary:hover{
+  background:#004785;
+  border-color:#004785;
+}
+/* Panel tetap putih, hanya aksen brand yang lembut */
+.panel{
+  border:1px solid #e1e6ec;
+  border-top:0;
+  box-shadow:0 6px 20px rgba(31,45,61,.07);
+}
+.panel:before{
+  height:3px;
+  margin:-16px -16px 14px;
+  background:linear-gradient(90deg,
+    rgba(213,0,25,.72) 0 48%,
+    rgba(0,84,166,.62) 48% 80%,
+    rgba(255,209,0,.72) 80% 100%);
+}
+.panel h2{color:#21415d;}
+.panel h2:before{background:#d50019;}
+.btn.primary{
+  background:#d50019;
+  border-color:#d50019;
+}
+.btn.primary:hover{
+  background:#b40014;
+  border-color:#b40014;
+}
+.panel-actions .btn.primary,.form-actions .btn.primary{
+  background:#0054a6;
+  border-color:#0054a6;
+}
+.panel-actions .btn.primary:hover,.form-actions .btn.primary:hover{
+  background:#004785;
+  border-color:#004785;
+}
+/* Database modal tetap membawa identitas, tetapi tidak mencolok */
+#dbModalOverlay .modal{
+  border-top:4px solid transparent;
+  border-image:linear-gradient(90deg,
+    rgba(213,0,25,.75) 0 48%,
+    rgba(0,84,166,.62) 48% 80%,
+    rgba(255,209,0,.72) 80% 100%) 1;
+}
+.modal-header{
+  background:linear-gradient(90deg,rgba(213,0,25,.035),rgba(0,84,166,.035));
+}
+.pin-modal{border-top:4px solid rgba(213,0,25,.8);}
+.pin-icon{
+  background:rgba(255,209,0,.13);
+  border:1px solid rgba(255,209,0,.65);
+  color:#c40017;
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -841,7 +1265,7 @@ function renderDbTable(filter){
   const lockTitle=e.locked?"Terkunci — buka dari Spreadsheet":"Kunci data";
   const lockSvg=e.locked
    ? '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="10.5" width="17" height="10.5" rx="2"/><path d="M7 10.5V7a5 5 0 0 1 10 0v3.5"/><circle cx="12" cy="15.7" r="1" fill="currentColor" stroke="none"/><path d="M12 16.7v2"/></svg>'
-   : '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="10.5" width="17" height="10.5" rx="2"/><path d="M7 10.5V7a5 5 0 0 1 9-3.2"/><path d="M19 10.5V7.5"/><path d="M19 7.5a4.5 4.5 0 0 1 1.2 3"/></svg>';
+   : '<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="10.5" width="17" height="10.5" rx="2"/><path d="M7 10.5V7a5 5 0 0 1 9.7-1.8"/><path d="M16.7 5.2A5 5 0 0 1 17 7v3.5"/></svg>';
   tr.innerHTML=`<td>${e.nik}</td><td>${e.nama}</td><td>${e.bagian}</td><td>${formatDate(e.tglMasuk)}</td><td>${e.tandaTangan?`<img class="ttd-thumb" src="${e.tandaTangan}">`:'<span class="muted">-</span>'}</td><td class="row-actions"><button type="button" class="${lockCls}" title="${lockTitle}" data-lock="${e.nik}">${lockSvg}</button> <button class="small-btn" data-edit="${e.nik}" ${dis}>Edit</button><button class="small-btn danger" data-del="${e.nik}" ${dis}>Hapus</button></td>`;
   tbody.appendChild(tr);
  });
@@ -1283,6 +1707,8 @@ function submitDatabasePin(){
 }
 
 document.addEventListener("DOMContentLoaded",()=>{
+  const pinOverlay=$("dbPinOverlay");
+  if(pinOverlay && pinOverlay.parentElement!==document.body) document.body.appendChild(pinOverlay);
  $("btnPinCancel")?.addEventListener("click",closeDatabasePin);
  $("btnPinSubmit")?.addEventListener("click",submitDatabasePin);
  $("dbPinInput")?.addEventListener("keydown",e=>{
