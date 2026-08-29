@@ -1010,6 +1010,73 @@ body{
 }
 </style>
 
+
+<!-- Favicon aplikasi -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffffff'/%3E%3Cpath d='M8 18h48v10H8z' fill='%23d50019'/%3E%3Cpath d='M8 28h48v8H8z' fill='%230054a6'/%3E%3Cpath d='M8 36h48v10H8z' fill='%23ffd100'/%3E%3Cellipse cx='32' cy='32' rx='13' ry='8' fill='%23ffffff' stroke='%23d50019' stroke-width='3'/%3E%3Cpath d='M25 32h14' stroke='%230054a6' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ffffff'/%3E%3Cpath d='M8 18h48v10H8z' fill='%23d50019'/%3E%3Cpath d='M8 28h48v8H8z' fill='%230054a6'/%3E%3Cpath d='M8 36h48v10H8z' fill='%23ffd100'/%3E%3Cellipse cx='32' cy='32' rx='13' ry='8' fill='%23ffffff' stroke='%23d50019' stroke-width='3'/%3E%3Cpath d='M25 32h14' stroke='%230054a6' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+
+
+<style id="indomaret-background-fix">
+@media screen{
+  html{
+    min-height:100%;
+    background:#f5f7fa;
+  }
+  body{
+    position:relative;
+    min-height:100vh;
+    background:#f5f7fa !important;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-2;
+    pointer-events:none;
+    background:
+      radial-gradient(ellipse 65% 52% at 0% 8%,
+        rgba(213,0,25,.14) 0%,
+        rgba(213,0,25,.065) 32%,
+        transparent 70%),
+      radial-gradient(ellipse 62% 50% at 100% 92%,
+        rgba(255,209,0,.15) 0%,
+        rgba(255,209,0,.06) 34%,
+        transparent 72%),
+      radial-gradient(ellipse 55% 45% at 92% 12%,
+        rgba(0,84,166,.12) 0%,
+        rgba(0,84,166,.045) 35%,
+        transparent 72%),
+      linear-gradient(135deg,#fbfcfd 0%,#f4f7fb 52%,#fffdf7 100%);
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    pointer-events:none;
+    background:
+      linear-gradient(118deg,transparent 0 22%,rgba(213,0,25,.018) 22.1% 22.35%,transparent 22.45% 100%),
+      linear-gradient(302deg,transparent 0 70%,rgba(0,84,166,.018) 70.1% 70.35%,transparent 70.45% 100%);
+  }
+  .app{
+    position:relative;
+    z-index:0;
+  }
+  .app-header{
+    background:rgba(255,255,255,.84) !important;
+    border-top:3px solid rgba(213,0,25,.48) !important;
+    border-bottom:1px solid rgba(0,84,166,.10) !important;
+    box-shadow:0 5px 18px rgba(31,45,61,.065) !important;
+    backdrop-filter:blur(10px);
+  }
+  .app-header:before{
+    height:2px !important;
+    opacity:.7;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
