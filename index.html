@@ -1207,11 +1207,6 @@ window.addEventListener("beforeprint",()=>{
 window.addEventListener("afterprint",scalePaperPreview);
 if(window.ResizeObserver) new ResizeObserver(scalePaperPreview).observe($("paper").parentElement.parentElement);
 scalePaperPreview();
-</script>
-
-
-<div class="created-by-watermark" aria-hidden="true">created by: Zie</div>
-
 
 /* ===== Akses PIN Kelola Database ===== */
 const DATABASE_ACCESS_PIN = "00000";
@@ -1258,4 +1253,9 @@ document.addEventListener("DOMContentLoaded",()=>{
    if(e.target.id==="dbPinOverlay") closeDatabasePin();
  });
 });
+</script>
+
+
+<div class="created-by-watermark" aria-hidden="true">created by: Zie</div>
+
 </body></html>
