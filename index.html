@@ -699,8 +699,15 @@ function refreshPenggantiOptions(){
 let dbSort={key:null,dir:1};
 function toggleRowLock(nik){
  const e=EMPLOYEES.find(x=>x.nik===nik); if(!e) return;
- e.locked=!e.locked;
- renderDbTable(); saveToCloud();
+ // Kunci hanya dapat diaktifkan dari aplikasi.
+ // Jika sudah terkunci, pembukaan kunci HANYA dilakukan dari Spreadsheet database.
+ if(e.locked){
+  alert("Data ini sudah terkunci. Pembukaan kunci hanya dapat dilakukan dari Spreadsheet database.");
+  return;
+ }
+ e.locked=true;
+ renderDbTable();
+ saveToCloud();
 }
 function renderDbTable(filter){
  const f=(filter||$("dbSearch").value||"").trim().toLowerCase();
@@ -723,10 +730,8 @@ function renderDbTable(filter){
   const tr=document.createElement("tr");
   const dis=e.locked?"disabled":"";
   const lockCls=e.locked?"row-lock-btn is-locked":"row-lock-btn";
-  const lockTitle=e.locked?"Buka kunci":"Kunci data";
-  const lockSvg=e.locked
-   ? '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
-   : '<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>';
+  const lockTitle=e.locked?"Terkunci — buka dari Spreadsheet":"Kunci data";
+  const lockSvg='<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
   tr.innerHTML=`<td>${e.nik}</td><td>${e.nama}</td><td>${e.bagian}</td><td>${formatDate(e.tglMasuk)}</td><td>${e.tandaTangan?`<img class="ttd-thumb" src="${e.tandaTangan}">`:'<span class="muted">-</span>'}</td><td class="row-actions"><button type="button" class="${lockCls}" title="${lockTitle}" data-lock="${e.nik}">${lockSvg}</button> <button class="small-btn" data-edit="${e.nik}" ${dis}>Edit</button><button class="small-btn danger" data-del="${e.nik}" ${dis}>Hapus</button></td>`;
   tbody.appendChild(tr);
  });
@@ -770,7 +775,7 @@ function deleteEmp(nik){
  refreshAfterDbChange(); saveToCloud();
 }
 function exportDb(){
- const rows=EMPLOYEES.map(e=>({NIK:e.nik,Nama:e.nama,Bagian:e.bagian,"Tgl Mulai Kerja":e.tglMasuk||"","Tanda Tangan (base64)":e.tandaTangan||""}));
+ const rows=EMPLOYEES.map(e=>({NIK:e.nik,Nama:e.nama,Bagian:e.bagian,"Tgl Mulai Kerja":e.tglMasuk||"","Tanda Tangan (base64)":e.tandaTangan||"",Locked:e.locked?"YA":"TIDAK"}));
  const ws=XLSX.utils.json_to_sheet(rows);
  ws["!cols"]=[{wch:14},{wch:26},{wch:20},{wch:14},{wch:20}];
  const wb=XLSX.utils.book_new();
@@ -784,14 +789,20 @@ function importDb(file){
    const wb=XLSX.read(reader.result,{type:"array"});
    const ws=wb.Sheets[wb.SheetNames[0]];
    const rows=XLSX.utils.sheet_to_json(ws,{defval:""});
-   const data=rows.map(r=>({
+   const imported=rows.map(r=>({
     nik:String(r["NIK"]??"").trim(),
     nama:String(r["Nama"]??"").trim(),
     bagian:String(r["Bagian"]??"").trim(),
     tglMasuk:formatExcelDate(r["Tgl Mulai Kerja"]),
     tandaTangan:String(r["Tanda Tangan (base64)"]??"").trim()||null
    })).filter(r=>r.nik);
-   if(!data.length) throw new Error("Tidak ada baris data yang valid");
+   if(!imported.length) throw new Error("Tidak ada baris data yang valid");
+   // Import tidak pernah boleh membuka record yang sudah terkunci.
+   const existingByNik=new Map(EMPLOYEES.map(e=>[e.nik,e]));
+   const data=imported.map(r=>{
+    const old=existingByNik.get(r.nik);
+    return {...r,locked:!!(old&&old.locked)};
+   });
    EMPLOYEES=data; refreshAfterDbChange(); saveToCloud();
    alert("Database berhasil dimuat ("+data.length+" karyawan).");
   }catch(err){ alert("Gagal memuat file Excel: "+err.message); }
