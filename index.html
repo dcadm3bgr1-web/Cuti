@@ -558,15 +558,17 @@ body{background:#eef3f9;}
 @keyframes lockIconBeat{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
 @keyframes lockModalIn{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 
-/* Watermark text-only: tanpa bubble/kotak, sedikit bergoyang dan berganti warna */
+/* Watermark text-only: tanpa bubble/kotak, orientasi & warna berubah-ubah */
 .created-by-watermark{
   position:fixed;
   left:14px;
   bottom:12px;
   z-index:99999;
-  pointer-events:none;
+  pointer-events:auto;
   user-select:none;
-  font-size:11px;
+  touch-action:none;
+  cursor:grab;
+  font-size:9px;
   font-weight:600;
   letter-spacing:.03em;
   background:none;
@@ -576,15 +578,13 @@ body{background:#eef3f9;}
   box-shadow:none;
   backdrop-filter:none;
   -webkit-backdrop-filter:none;
-  animation: watermarkWiggle 2.8s ease-in-out infinite,
-             watermarkColor 5s linear infinite;
+  animation: watermarkColor 5s linear infinite;
   transform-origin:center;
+  transition-property:transform;
+  will-change:left,top,transform;
 }
-@keyframes watermarkWiggle{
-  0%,100%{transform:rotate(0deg) translateY(0);}
-  25%{transform:rotate(-2deg) translateY(-1px);}
-  50%{transform:rotate(2deg) translateY(0);}
-  75%{transform:rotate(-1deg) translateY(1px);}
+.created-by-watermark.wm-held{
+  cursor:grabbing;
 }
 @keyframes watermarkColor{
   0%{color:#2f6fed;}
@@ -1089,6 +1089,25 @@ body{
   }
 }
 </style>
+<style id="multi-date-calendar-style">
+.mdc-popup{position:fixed;z-index:2147483647;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 14px 38px rgba(20,24,34,.22);padding:12px;width:280px;font-family:'Segoe UI',Arial,sans-serif;}
+.mdc-popup[hidden]{display:none !important;}
+.mdc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:6px;}
+.mdc-nav-btn{border:1px solid var(--line);background:#fff;border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:14px;line-height:1;color:var(--ink);display:flex;align-items:center;justify-content:center;}
+.mdc-nav-btn:hover{background:#f0f2f5;}
+.mdc-title{font-size:13px;font-weight:600;color:var(--ink);}
+.mdc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.mdc-dow{font-size:10px;color:var(--muted);text-align:center;padding:2px 0;font-weight:600;}
+.mdc-day{border:1px solid transparent;background:none;border-radius:7px;font-size:12px;padding:6px 0;cursor:pointer;color:var(--ink);text-align:center;}
+.mdc-day:hover{background:#eef2fb;}
+.mdc-day.mdc-empty{cursor:default;visibility:hidden;}
+.mdc-day.mdc-selected{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+.mdc-day.mdc-today{border-color:var(--accent);}
+.mdc-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid var(--line);}
+.mdc-count{font-size:11px;color:var(--muted);}
+.mdc-done-btn{border:1px solid var(--accent);background:var(--accent);color:#fff;font-weight:600;font-size:12px;padding:6px 14px;border-radius:7px;cursor:pointer;}
+.mdc-done-btn:hover{opacity:.92;}
+</style>
 
 </head>
 <body>
@@ -1107,7 +1126,7 @@ body{
 <label><span class="field-label">Hak Cuti</span><input id="hakCuti" type="number" min="0" value=""></label>
 <label><span class="field-label">Cuti yang Diambil</span><input id="cutiDiambil" type="number" min="0" value="0"></label>
 <label><span class="field-label">Sisa Cuti</span><input id="sisaCuti" type="number" readonly=""></label>
-<label><span class="field-label">Cuti Mulai Tanggal</span><input id="mulaiCuti" type="date"></label>
+<label><span class="field-label">Cuti Mulai Tanggal</span><div class="input-with-list"><input id="mulaiCuti" type="text" readonly="" placeholder="Pilih tanggal"><button type="button" class="small-btn" id="btnMulaiCutiCal" aria-label="Buka kalender">📅</button></div></label>
 <label><span class="field-label">Masuk Bekerja Lagi</span><input id="masukLagi" type="date"></label>
 <label><span class="field-label">Alasan Cuti</span><input id="alasan" placeholder="Contoh: Keperluan keluarga"></label>
 <label><span class="field-label">Alamat Cuti / No. Yang Bisa Dihubungi</span><input id="kontak" placeholder="Alamat atau nomor telepon"></label>
@@ -1224,6 +1243,20 @@ onclick="(function(e){if(e)e.stopPropagation();alert('Data telah disimpan.');var
 </div>
 </div>
 </main></div>
+
+<div class="mdc-popup no-print" id="mdcPopup" hidden role="dialog" aria-label="Pilih tanggal cuti">
+  <div class="mdc-header">
+    <button type="button" class="mdc-nav-btn" id="mdcPrev" aria-label="Bulan sebelumnya">&#8249;</button>
+    <div class="mdc-title" id="mdcTitle">-</div>
+    <button type="button" class="mdc-nav-btn" id="mdcNext" aria-label="Bulan berikutnya">&#8250;</button>
+  </div>
+  <div class="mdc-grid" id="mdcGrid"></div>
+  <div class="mdc-footer">
+    <span class="mdc-count" id="mdcCount">0 tanggal dipilih</span>
+    <button type="button" class="mdc-done-btn" id="mdcDone">Selesai</button>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 let EMPLOYEES = [
@@ -1277,13 +1310,98 @@ function sync() {
  $("sisaCuti").value=sisa;
  $("pNik").textContent=$("nik").value||"-"; $("pNama").textContent=proper($("nama").value)||"-"; $("pTglMasuk").textContent=$("tglMasuk").value||"-";
  $("pHak").textContent=hak; $("pDiambil").textContent=ambil; $("pSisa").textContent=sisa;
- $("pMulai").textContent=formatDate($("mulaiCuti").value); $("pMasukLagi").textContent=formatDate($("masukLagi").value);
+ $("pMulai").textContent=$("mulaiCuti").value||"-"; $("pMasukLagi").textContent=formatDate($("masukLagi").value);
  $("pAlasan").textContent=proper($("alasan").value)||"-"; $("pKontak").textContent=$("kontak").value||"-"; $("pPengganti").textContent=proper($("pengganti").value)||"-"; $("pPemohon").textContent=proper($("nama").value)||"-";
  $("pTempatTanggal").textContent=todayPlace();
  const emp=EMPLOYEES.find(x=>x.nik===$("nik").value.trim());
  const ttdWrap=$("pPemohonTtd");
  ttdWrap.innerHTML=(emp&&emp.tandaTangan)?`<img src="${emp.tandaTangan}" alt="Tanda tangan pemohon">`:"";
 }
+
+/* ===== Kalender Multi-Pilih: Cuti Mulai Tanggal ===== */
+const MDC_MONTHS=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const MDC_DOW=["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
+let mdcSelected=[]; // array tanggal terpilih, format ISO "YYYY-MM-DD"
+let mdcViewYear, mdcViewMonth; // bulan yang sedang ditampilkan di kalender (mdcViewMonth: 0-11)
+function mdcToISO(y,m,d){ return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`; }
+function mdcFormatDisplay(){
+ if(!mdcSelected.length) return "";
+ const sorted=mdcSelected.slice().sort();
+ const groups=[];
+ sorted.forEach(iso=>{
+  const [y,m,d]=iso.split("-").map(Number);
+  const last=groups[groups.length-1];
+  if(last && last.year===y && last.month===m) last.days.push(d);
+  else groups.push({year:y,month:m,days:[d]});
+ });
+ return groups.map((g,i)=>{
+  let s=g.days.map(d=>String(d).padStart(2,"0")).join(", ")+" "+MDC_MONTHS[g.month-1];
+  const isLast=i===groups.length-1;
+  const nextYearDiffers=!isLast && groups[i+1].year!==g.year;
+  if(isLast || nextYearDiffers) s+=" "+g.year;
+  return s;
+ }).join(", ");
+}
+function mdcUpdateField(){
+ $("mulaiCuti").value=mdcFormatDisplay();
+ $("mdcCount").textContent=mdcSelected.length+" tanggal dipilih";
+ sync();
+}
+function mdcRenderGrid(){
+ $("mdcTitle").textContent=MDC_MONTHS[mdcViewMonth]+" "+mdcViewYear;
+ const grid=$("mdcGrid");
+ grid.innerHTML="";
+ MDC_DOW.forEach(d=>{ const el=document.createElement("div"); el.className="mdc-dow"; el.textContent=d; grid.appendChild(el); });
+ const firstDay=new Date(mdcViewYear,mdcViewMonth,1).getDay();
+ const daysInMonth=new Date(mdcViewYear,mdcViewMonth+1,0).getDate();
+ const now=new Date(); const todayISO=mdcToISO(now.getFullYear(),now.getMonth(),now.getDate());
+ for(let i=0;i<firstDay;i++){ const el=document.createElement("div"); el.className="mdc-day mdc-empty"; grid.appendChild(el); }
+ for(let d=1; d<=daysInMonth; d++){
+  const iso=mdcToISO(mdcViewYear,mdcViewMonth,d);
+  const btn=document.createElement("button");
+  btn.type="button"; btn.className="mdc-day"; btn.textContent=d;
+  if(mdcSelected.includes(iso)) btn.classList.add("mdc-selected");
+  if(iso===todayISO) btn.classList.add("mdc-today");
+  btn.onclick=()=>{
+   const idx=mdcSelected.indexOf(iso);
+   if(idx===-1) mdcSelected.push(iso); else mdcSelected.splice(idx,1);
+   mdcUpdateField();
+   mdcRenderGrid();
+  };
+  grid.appendChild(btn);
+ }
+}
+function mdcPositionPopup(){
+ const btn=$("btnMulaiCutiCal"); const popup=$("mdcPopup");
+ const rect=btn.getBoundingClientRect();
+ popup.style.visibility="hidden"; popup.hidden=false;
+ const pw=popup.offsetWidth, ph=popup.offsetHeight;
+ const vw=window.innerWidth, vh=window.innerHeight;
+ let left=rect.left;
+ if(left+pw>vw-8) left=vw-pw-8;
+ if(left<8) left=8;
+ let top=rect.bottom+6;
+ if(top+ph>vh-8){ top=rect.top-ph-6; if(top<8) top=8; }
+ popup.style.top=top+"px"; popup.style.left=left+"px";
+ popup.style.visibility="";
+}
+function mdcOpen(){
+ const base=mdcSelected.length ? mdcSelected.slice().sort()[mdcSelected.length-1] : null;
+ const baseDate=base ? new Date(base+"T00:00:00") : new Date();
+ mdcViewYear=baseDate.getFullYear(); mdcViewMonth=baseDate.getMonth();
+ mdcRenderGrid();
+ $("mdcCount").textContent=mdcSelected.length+" tanggal dipilih";
+ mdcPositionPopup();
+ $("mdcPopup").hidden=false;
+}
+function mdcClose(){ $("mdcPopup").hidden=true; }
+$("btnMulaiCutiCal").onclick=(e)=>{ e.preventDefault(); if($("mdcPopup").hidden) mdcOpen(); else mdcClose(); };
+$("mulaiCuti").addEventListener("click",(e)=>{ e.preventDefault(); if($("mdcPopup").hidden) mdcOpen(); });
+$("mdcPrev").onclick=()=>{ mdcViewMonth--; if(mdcViewMonth<0){mdcViewMonth=11; mdcViewYear--;} mdcRenderGrid(); };
+$("mdcNext").onclick=()=>{ mdcViewMonth++; if(mdcViewMonth>11){mdcViewMonth=0; mdcViewYear++;} mdcRenderGrid(); };
+$("mdcDone").onclick=()=>mdcClose();
+window.addEventListener("resize",()=>{ if(!$("mdcPopup").hidden) mdcPositionPopup(); });
+window.addEventListener("scroll",()=>{ if(!$("mdcPopup").hidden) mdcPositionPopup(); }, true);
 
 /* ===== Database Karyawan (CRUD) ===== */
 let currentEditNik=null, pendingTtd=null;
@@ -1542,7 +1660,7 @@ $("empTableBody").addEventListener("click",(e)=>{
 });
 $("btnFind").onclick=findEmployee; $("nik").onchange=findEmployee; $("nik").oninput=()=>{if(EMPLOYEES.some(x=>x.nik===$("nik").value.trim()))findEmployee();};
 ["hakCuti","cutiDiambil","mulaiCuti","masukLagi","alasan","kontak","pengganti"].forEach(id=>{$(id).oninput=sync;$(id).onchange=sync;});
-$("btnReset").onclick=()=>{document.querySelectorAll(".panel input").forEach(el=>{if(el.id==="hakCuti")el.value=DEFAULT_HAK_CUTI;else if(el.id==="cutiDiambil")el.value=0;else el.value="";});$("pengganti").value="";sync();};
+$("btnReset").onclick=()=>{document.querySelectorAll(".panel input").forEach(el=>{if(el.id==="hakCuti")el.value=DEFAULT_HAK_CUTI;else if(el.id==="cutiDiambil")el.value=0;else el.value="";});$("pengganti").value="";mdcSelected=[];mdcClose();sync();};
 $("btnPrint").onclick=()=>{sync();window.print();};
 const CLOUD_SYNC_URL="https://script.google.com/macros/s/AKfycbzkjxrQUM1r8ejfvL2stx24N-LkjdoV1wtDSt2E_scQlqTiY3jjzzBtpR8zBz-pW978fQ/exec";
 function setSyncStatus(state){
@@ -1888,5 +2006,165 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 
 <div class="created-by-watermark" aria-hidden="true">created by: Zie</div>
+<script>
+(function(){
+  const el = document.querySelector('.created-by-watermark');
+  if(!el) return;
+
+  const rect = el.getBoundingClientRect();
+  let x = rect.left, y = rect.top;
+  el.style.bottom = 'auto';
+  el.style.top = y + 'px';
+  el.style.left = x + 'px';
+
+  const MIN_SPEED = 0.5;   // kecepatan paling pelan
+  const MAX_SPEED = 3.6;   // kecepatan paling kencang saat jalan biasa
+  const THROW_CAP = 24;    // batas kecepatan maksimal saat dilempar
+  const AVOID_RADIUS = 55;
+
+  function randomSpeed(){ return MIN_SPEED + Math.random() * (MAX_SPEED - MIN_SPEED); }
+  function setVelocity(angle, speed){ vx = Math.cos(angle) * speed; vy = Math.sin(angle) * speed; }
+
+  let vx = 0, vy = 0;
+  let held = false; // dideklarasikan di awal karena dipakai oleh updateTransform() saat rotasi pertama kali dijadwalkan
+  setVelocity(Math.random() * Math.PI * 2, randomSpeed());
+
+  let mouseX = -9999, mouseY = -9999;
+  let avoiding = false; // supaya deflection dihitung sekali saat MASUK area kursor, bukan tiap frame (biar tetap lurus)
+
+  document.addEventListener('mousemove', (e)=>{ mouseX = e.clientX; mouseY = e.clientY; }, {passive:true});
+  document.addEventListener('mouseleave', ()=>{ mouseX = -9999; mouseY = -9999; avoiding = false; });
+  document.addEventListener('touchmove', (e)=>{
+    if(e.touches && e.touches[0]){ mouseX = e.touches[0].clientX; mouseY = e.touches[0].clientY; }
+  }, {passive:true});
+
+  // Orientasi teks berubah acak secara natural: putaran relatif (jalur terpendek,
+  // tidak pernah muter jauh), durasi mengikuti besar sudut, sedikit overshoot saat berhenti.
+  let currentRotation = 0;
+  function updateTransform(){
+    el.style.transform = `rotate(${currentRotation}deg) scale(${held ? 1.25 : 1})`;
+  }
+  function scheduleRotation(){
+    const delta = (Math.random() * 2 - 1) * 130; // -130..130 derajat relatif dari posisi sekarang
+    currentRotation += delta;
+    const duration = 0.7 + (Math.abs(delta) / 130) * 1.3; // putaran kecil = cepat, putaran besar = lebih lama
+    el.style.transitionDuration = duration.toFixed(2) + 's';
+    el.style.transitionTimingFunction = 'cubic-bezier(.34,1.56,.64,1)'; // sedikit overshoot lalu menetap, terasa natural
+    updateTransform();
+    const pause = 900 + Math.random() * 2600; // jeda diam setelah berhenti berputar
+    setTimeout(scheduleRotation, duration * 1000 + pause);
+  }
+  scheduleRotation();
+
+  // --- Tangkap & lempar ---
+  let grabOffsetX = 0, grabOffsetY = 0;
+  let dragHistory = [];
+
+  el.addEventListener('pointerdown', (e)=>{
+    held = true;
+    avoiding = false;
+    el.classList.add('wm-held');
+    try{ el.setPointerCapture(e.pointerId); }catch(_){}
+    grabOffsetX = e.clientX - x;
+    grabOffsetY = e.clientY - y;
+    vx = 0; vy = 0;
+    dragHistory = [{t: performance.now(), x, y}];
+    el.style.transitionDuration = '0.2s';
+    el.style.transitionTimingFunction = 'cubic-bezier(.34,1.56,.64,1)';
+    updateTransform();
+    e.preventDefault();
+  });
+
+  el.addEventListener('pointermove', (e)=>{
+    if(!held) return;
+    const w = el.offsetWidth || 90, h = el.offsetHeight || 14;
+    x = Math.max(4, Math.min(window.innerWidth - w - 4, e.clientX - grabOffsetX));
+    y = Math.max(4, Math.min(window.innerHeight - h - 4, e.clientY - grabOffsetY));
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    const now = performance.now();
+    dragHistory.push({t: now, x, y});
+    if(dragHistory.length > 6) dragHistory.shift();
+  });
+
+  function releaseHold(e){
+    if(!held) return;
+    held = false;
+    el.classList.remove('wm-held');
+    try{ el.releasePointerCapture(e.pointerId); }catch(_){}
+    el.style.transitionDuration = '0.3s';
+    updateTransform();
+
+    if(dragHistory.length >= 2){
+      // Pakai HANYA segmen gerakan paling akhir (2 sample terakhir), bukan rata-rata
+      // dari seluruh histori, supaya arah lemparan persis mengikuti arah tangan/mouse
+      // tepat saat dilepas.
+      const first = dragHistory[dragHistory.length - 2], last = dragHistory[dragHistory.length - 1];
+      const dt = Math.max(last.t - first.t, 8);
+      let tvx = (last.x - first.x) / dt * 16.7;
+      let tvy = (last.y - first.y) / dt * 16.7;
+      const sp = Math.sqrt(tvx*tvx + tvy*tvy);
+      if(sp > THROW_CAP){ tvx = tvx/sp*THROW_CAP; tvy = tvy/sp*THROW_CAP; }
+      if(sp < 0.4){
+        // Dilepas tanpa dilempar (nyaris diam) -> lanjut jalan santai seperti biasa.
+        setVelocity(Math.random() * Math.PI * 2, randomSpeed());
+      } else {
+        vx = tvx; vy = tvy;
+      }
+    } else {
+      setVelocity(Math.random() * Math.PI * 2, randomSpeed());
+    }
+  }
+  el.addEventListener('pointerup', releaseHold);
+  el.addEventListener('pointercancel', releaseHold);
+
+  function tick(){
+    const w = el.offsetWidth || 90, h = el.offsetHeight || 14;
+
+    if(!held){
+      // Gerak lurus dengan kecepatan konstan (vx,vy) selama tidak kena tepi/kursor.
+      x += vx; y += vy;
+
+      // --- Menghindari kursor: belok sekali saat MASUK radius, lalu lurus lagi ---
+      const cx = x + w/2, cy = y + h/2;
+      const dx = cx - mouseX, dy = cy - mouseY;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if(dist < AVOID_RADIUS){
+        if(!avoiding){
+          avoiding = true;
+          const away = Math.atan2(dy, dx) + (Math.random()-0.5) * 0.8; // arah menjauh + sedikit variasi
+          setVelocity(away, randomSpeed());
+        }
+      } else {
+        avoiding = false;
+      }
+
+      // --- Pantulan di tepi layar: belokkan arah & acak ulang kecepatan ---
+      const maxX = window.innerWidth - w - 4;
+      const maxY = window.innerHeight - h - 4;
+      let bounced = false;
+      if(x < 4){ x = 4; vx = Math.abs(vx); bounced = true; }
+      if(x > maxX){ x = maxX; vx = -Math.abs(vx); bounced = true; }
+      if(y < 4){ y = 4; vy = Math.abs(vy); bounced = true; }
+      if(y > maxY){ y = maxY; vy = -Math.abs(vy); bounced = true; }
+      if(bounced){
+        const angle = Math.atan2(vy, vx) + (Math.random()-0.5) * 0.6; // pantulan + sedikit variasi arah
+        setVelocity(angle, randomSpeed());
+      }
+
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+    }
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  window.addEventListener('resize', ()=>{
+    x = Math.min(x, Math.max(4, window.innerWidth - (el.offsetWidth||90) - 4));
+    y = Math.min(y, Math.max(4, window.innerHeight - (el.offsetHeight||14) - 4));
+  });
+})();
+</script>
 
 </body></html>
