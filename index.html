@@ -1104,7 +1104,9 @@ body{
 .mdc-day.mdc-selected{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
 .mdc-day.mdc-today{border-color:var(--accent);}
 .mdc-footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:8px;border-top:1px solid var(--line);}
-.mdc-count{font-size:11px;color:var(--muted);}
+.mdc-count{font-size:11px;color:var(--muted);transition:color .15s;}
+.mdc-count.mdc-limit-warn{color:#d92d20;font-weight:600;}
+.mdc-day[disabled]{opacity:.35;cursor:not-allowed;}
 .mdc-done-btn{border:1px solid var(--accent);background:var(--accent);color:#fff;font-weight:600;font-size:12px;padding:6px 14px;border-radius:7px;cursor:pointer;}
 .mdc-done-btn:hover{opacity:.92;}
 </style>
@@ -1323,28 +1325,88 @@ const MDC_MONTHS=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agus
 const MDC_DOW=["Min","Sen","Sel","Rab","Kam","Jum","Sab"];
 let mdcSelected=[]; // array tanggal terpilih, format ISO "YYYY-MM-DD"
 let mdcViewYear, mdcViewMonth; // bulan yang sedang ditampilkan di kalender (mdcViewMonth: 0-11)
+function mdcGetLimit(){ const v=Number($("cutiDiambil").value); return (Number.isFinite(v)&&v>0)?v:null; }
+function mdcCountText(){ return mdcSelected.length+" tanggal dipilih"; }
+function mdcShowLimitWarning(limit){
+ const countEl=$("mdcCount");
+ countEl.classList.add("mdc-limit-warn");
+ countEl.textContent="Maksimal "+limit+" tanggal (sesuai Cuti yang Diambil)";
+ clearTimeout(mdcShowLimitWarning._t);
+ mdcShowLimitWarning._t=setTimeout(()=>{ countEl.classList.remove("mdc-limit-warn"); countEl.textContent=mdcCountText(); },1600);
+}
 function mdcToISO(y,m,d){ return `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`; }
+function mdcFormatRun(run,showYear){
+ const [y1,m1,d1]=run[0].split("-").map(Number);
+ const [y2,m2,d2]=run[run.length-1].split("-").map(Number);
+ let s;
+ if(run.length===1){
+  s=String(d1).padStart(2,"0")+" "+MDC_MONTHS[m1-1];
+  if(showYear) s+=" "+y1;
+ } else if(y1===y2 && m1===m2){
+  s=d1+"-"+d2+" "+MDC_MONTHS[m1-1]; // rentang berurutan: hanya tanggal awal-akhir
+  if(showYear) s+=" "+y2;
+ } else if(y1===y2){
+  s=d1+" "+MDC_MONTHS[m1-1]+" - "+d2+" "+MDC_MONTHS[m2-1];
+  if(showYear) s+=" "+y2;
+ } else {
+  s=d1+" "+MDC_MONTHS[m1-1]+" "+y1+" - "+d2+" "+MDC_MONTHS[m2-1]+" "+y2;
+ }
+ return s;
+}
+function mdcJoinParts(parts){
+ if(parts.length<=1) return parts.join("");
+ return parts.slice(0,-1).join(", ")+", dan "+parts[parts.length-1];
+}
+function mdcDayLabel(run){
+ const d1=Number(run[0].split("-")[2]);
+ const d2=Number(run[run.length-1].split("-")[2]);
+ return run.length===1 ? String(d1).padStart(2,"0") : (d1+"-"+d2);
+}
 function mdcFormatDisplay(){
  if(!mdcSelected.length) return "";
  const sorted=mdcSelected.slice().sort();
- const groups=[];
+ // 1) Kelompokkan jadi "runs": tanggal-tanggal yang berurutan (selisih 1 hari kalender)
+ const runs=[];
  sorted.forEach(iso=>{
-  const [y,m,d]=iso.split("-").map(Number);
-  const last=groups[groups.length-1];
-  if(last && last.year===y && last.month===m) last.days.push(d);
-  else groups.push({year:y,month:m,days:[d]});
+  const last=runs[runs.length-1];
+  if(last){
+   const prevDate=new Date(last[last.length-1]+"T00:00:00");
+   const curDate=new Date(iso+"T00:00:00");
+   const diffDays=Math.round((curDate-prevDate)/86400000);
+   if(diffDays===1){ last.push(iso); return; }
+  }
+  runs.push([iso]);
  });
- return groups.map((g,i)=>{
-  let s=g.days.map(d=>String(d).padStart(2,"0")).join(", ")+" "+MDC_MONTHS[g.month-1];
-  const isLast=i===groups.length-1;
-  const nextYearDiffers=!isLast && groups[i+1].year!==g.year;
-  if(isLast || nextYearDiffers) s+=" "+g.year;
-  return s;
- }).join(", ");
+ // 2) Tandai tiap run: apakah seluruhnya berada di bulan & tahun yang sama
+ const tagged=runs.map(run=>{
+  const [y1,m1]=run[0].split("-").map(Number);
+  const [y2,m2]=run[run.length-1].split("-").map(Number);
+  return {run, y:y1, m:m1, sameMonth:(y1===y2 && m1===m2)};
+ });
+ // 3) Gabungkan run-run berurutan yang bulan & tahunnya sama menjadi satu grup,
+ //    supaya nama bulan & tahun cukup ditulis sekali per grup
+ const groups=[];
+ tagged.forEach(t=>{
+  const lastG=groups[groups.length-1];
+  if(t.sameMonth && lastG && lastG.sameMonth && lastG.y===t.y && lastG.m===t.m){
+   lastG.runs.push(t.run);
+  } else {
+   groups.push({sameMonth:t.sameMonth, y:t.y, m:t.m, runs:[t.run], fullRun:t.run});
+  }
+ });
+ // 4) Render tiap grup: dalam satu bulan/tahun -> "20-22, dan 24-26 September 2026"
+ const parts=groups.map(g=>{
+  if(g.sameMonth){
+   const dayLabels=g.runs.map(mdcDayLabel);
+   return mdcJoinParts(dayLabels)+" "+MDC_MONTHS[g.m-1]+" "+g.y;
+  }
+  return mdcFormatRun(g.fullRun,true); // run yang melintasi bulan/tahun, ditulis lengkap
+ });
+ return mdcJoinParts(parts);
 }
 function mdcUpdateField(){
  $("mulaiCuti").value=mdcFormatDisplay();
- $("mdcCount").textContent=mdcSelected.length+" tanggal dipilih";
+ $("mdcCount").textContent=mdcCountText();
  sync();
 }
 function mdcRenderGrid(){
@@ -1360,11 +1422,20 @@ function mdcRenderGrid(){
   const iso=mdcToISO(mdcViewYear,mdcViewMonth,d);
   const btn=document.createElement("button");
   btn.type="button"; btn.className="mdc-day"; btn.textContent=d;
-  if(mdcSelected.includes(iso)) btn.classList.add("mdc-selected");
+  const isSelected=mdcSelected.includes(iso);
+  if(isSelected) btn.classList.add("mdc-selected");
   if(iso===todayISO) btn.classList.add("mdc-today");
+  const limit=mdcGetLimit();
+  if(!isSelected && limit!==null && mdcSelected.length>=limit) btn.disabled=true;
   btn.onclick=()=>{
    const idx=mdcSelected.indexOf(iso);
-   if(idx===-1) mdcSelected.push(iso); else mdcSelected.splice(idx,1);
+   if(idx===-1){
+    const lim=mdcGetLimit();
+    if(lim!==null && mdcSelected.length>=lim){ mdcShowLimitWarning(lim); return; }
+    mdcSelected.push(iso);
+   } else {
+    mdcSelected.splice(idx,1);
+   }
    mdcUpdateField();
    mdcRenderGrid();
   };
@@ -1390,7 +1461,7 @@ function mdcOpen(){
  const baseDate=base ? new Date(base+"T00:00:00") : new Date();
  mdcViewYear=baseDate.getFullYear(); mdcViewMonth=baseDate.getMonth();
  mdcRenderGrid();
- $("mdcCount").textContent=mdcSelected.length+" tanggal dipilih";
+ $("mdcCount").textContent=mdcCountText();
  mdcPositionPopup();
  $("mdcPopup").hidden=false;
 }
@@ -1660,6 +1731,14 @@ $("empTableBody").addEventListener("click",(e)=>{
 });
 $("btnFind").onclick=findEmployee; $("nik").onchange=findEmployee; $("nik").oninput=()=>{if(EMPLOYEES.some(x=>x.nik===$("nik").value.trim()))findEmployee();};
 ["hakCuti","cutiDiambil","mulaiCuti","masukLagi","alasan","kontak","pengganti"].forEach(id=>{$(id).oninput=sync;$(id).onchange=sync;});
+$("cutiDiambil").addEventListener("input",()=>{
+ const limit=mdcGetLimit();
+ if(limit!==null && mdcSelected.length>limit){
+  mdcSelected=mdcSelected.slice().sort().slice(0,limit);
+  mdcUpdateField();
+  if(!$("mdcPopup").hidden) mdcRenderGrid();
+ }
+});
 $("btnReset").onclick=()=>{document.querySelectorAll(".panel input").forEach(el=>{if(el.id==="hakCuti")el.value=DEFAULT_HAK_CUTI;else if(el.id==="cutiDiambil")el.value=0;else el.value="";});$("pengganti").value="";mdcSelected=[];mdcClose();sync();};
 $("btnPrint").onclick=()=>{sync();window.print();};
 const CLOUD_SYNC_URL="https://script.google.com/macros/s/AKfycbzkjxrQUM1r8ejfvL2stx24N-LkjdoV1wtDSt2E_scQlqTiY3jjzzBtpR8zBz-pW978fQ/exec";
